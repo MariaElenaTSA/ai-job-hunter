@@ -23,4 +23,4 @@ def get_jobs():
         })
     jobs = [job for job in jobs if job["score"] >= MIN_SCORE]
     jobs.sort(key=lambda job: job["score"], reverse=True)
-    return jobs
+    return jobs[:10]
