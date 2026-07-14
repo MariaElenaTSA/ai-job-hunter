@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.services.job_service import get_mock_jobs
+from app.services.job_service import get_jobs
 
 app = FastAPI(
     title="AI Job Hunter",
@@ -19,5 +19,5 @@ def health():
     }
 
 @app.get("/jobs")
-def get_jobs():
-    return get_mock_jobs()
+def jobs():
+    return get_jobs()

@@ -1,15 +1,5 @@
-def get_mock_jobs():
-    return [
-        {
-            "company": "Stripe",
-            "title": "Solutions Engineer",
-            "location": "Remote",
-            "score": 98
-        },
-        {
-            "company": "Brex",
-            "title": "Product Operations",
-            "location": "Remote",
-            "score": 96
-        }
-    ]
+from app.services.greenhouse_client import get_greenhouse_jobs
+
+def get_jobs():
+    data = get_greenhouse_jobs()
+    return data["jobs"][:10]
