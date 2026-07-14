@@ -1,6 +1,6 @@
 import requests
 
-GREENHOUSE_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs"
+GREENHOUSE_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs?content=true"
 
 
 def get_greenhouse_jobs():

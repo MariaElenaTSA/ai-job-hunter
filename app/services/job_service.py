@@ -16,6 +16,8 @@ def get_jobs():
             "updated_at": job.get("updated_at"),
             "language": job.get("language"),
             "application_deadline": job.get("application_deadline"),
+            "description_length": len(job.get("content", "")),
+            "has_description": bool(job.get("content")),
             "score": calculate_score(job)
         })
     jobs.sort(key=lambda job: job["score"], reverse=True)
