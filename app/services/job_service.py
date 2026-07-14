@@ -15,7 +15,8 @@ def get_jobs():
             "first_published": job.get("first_published"),
             "updated_at": job.get("updated_at"),
             "language": job.get("language"),
-            "application_deadline": job.get("application_deadline")
+            "application_deadline": job.get("application_deadline"),
+            "score": 0
         })
 
     return jobs
