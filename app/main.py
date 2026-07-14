@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.services.job_service import get_mock_jobs
 
 app = FastAPI(
     title="AI Job Hunter",
@@ -19,17 +20,4 @@ def health():
 
 @app.get("/jobs")
 def get_jobs():
-    return [
-        {
-            "company": "Stripe",
-            "title": "Solutions Engineer",
-            "location": "Remote",
-            "score": 98
-        },
-        {
-            "company": "Brex",
-            "title": "Product Operations",
-            "location": "Remote",
-            "score": 96
-        }
-    ]
+    return get_mock_jobs()
