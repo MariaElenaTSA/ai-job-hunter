@@ -8,3 +8,11 @@ app = FastAPI(
 @app.get("/")
 def home():
     return {"message": "AI Job Hunter API is running!"}
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "AI Job Hunter",
+        "version": "0.1.0"
+    }
