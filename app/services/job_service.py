@@ -18,5 +18,5 @@ def get_jobs():
             "application_deadline": job.get("application_deadline"),
             "score": calculate_score(job)
         })
-
+    jobs.sort(key=lambda job: job["score"], reverse=True)
     return jobs
