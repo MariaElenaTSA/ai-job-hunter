@@ -1,5 +1,5 @@
 from app.services.greenhouse_client import get_greenhouse_jobs
-
+from app.services.scoring_service import calculate_score
 
 def get_jobs():
     data = get_greenhouse_jobs()
@@ -16,7 +16,7 @@ def get_jobs():
             "updated_at": job.get("updated_at"),
             "language": job.get("language"),
             "application_deadline": job.get("application_deadline"),
-            "score": 0
+            "score": calculate_score(job)
         })
 
     return jobs
