@@ -1,5 +1,6 @@
 from app.services.greenhouse_client import get_greenhouse_jobs
 from app.services.scoring_service import calculate_score
+from app.profile import MIN_SCORE
 
 def get_jobs():
     data = get_greenhouse_jobs()
@@ -20,5 +21,6 @@ def get_jobs():
             "has_description": bool(job.get("content")),
             "score": calculate_score(job)
         })
+    jobs = [job for job in jobs if job["score"] >= MIN_SCORE]
     jobs.sort(key=lambda job: job["score"], reverse=True)
     return jobs
