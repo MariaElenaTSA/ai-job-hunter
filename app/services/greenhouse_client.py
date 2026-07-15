@@ -6,4 +6,4 @@ GREENHOUSE_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs?content
 def get_greenhouse_jobs():
     response = requests.get(GREENHOUSE_URL, timeout=10)
     response.raise_for_status()
-    return response.json()
+    return response.json()["jobs"]
