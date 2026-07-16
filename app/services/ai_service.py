@@ -1,8 +1,12 @@
 def summarize_job(job):
     return {
         "job_id": job["id"],
+        "title": job["title"],
         "summary": (
-            "AI summarization is not implemented yet. "
-            "This endpoint is ready for future integration."
+            "AI analysis is not implemented yet. "
+            "This structure defines the expected response."
         ),
+        "required_skills": [],
+        "why_it_matches": [],
+        "potential_gaps": [],
     }
