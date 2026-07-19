@@ -1,0 +1,262 @@
+
+{
+"identity": {
+        "full_name": "Maria Elena Paredes Gonzales",
+        "professional_headline": "",
+        "location": "Lima, Peru",
+        "timezone": "America/Lima",
+        "email": "",
+        "linkedin_url": "",
+        "github_url": "",
+        "portfolio_url": ""},
+
+"professional_identity": {
+        "mission": "I help Product and Engineering teams reduce technical uncertainty by transforming ambiguous system problems into evidence-based engineering decisions.",
+        "approach": "Through deep technical investigation, bug reproduction and root cause analysis, I enable teams to resolve the right problem faster, de-risk product rollouts, and build confidence across Engineering, Product and Customer Operations.",
+        "core_value": "Reduce technical uncertainty",
+        "target_teams": [
+            "Product",
+            "Engineering",
+            "Customer Operations"
+        ],
+        "professional_superpowers": [
+            {
+            "name": "Reduce Technical Uncertainty",
+            "description": "Transforms ambiguous technical incidents into structured, evidence-based investigations that support better decisions."
+            },
+            {
+            "name": "De-risk Product Rollouts",
+            "description": "Identifies and reproduces critical issues early so teams can scale product initiatives with greater confidence."
+            },
+            {
+            "name": "Build Cross-functional Trust",
+            "description": "Creates confidence across technical and non-technical teams through clear analysis, calm communication and reliable follow-through."
+            }],
+        "decision_principles": [
+            "Evidence before escalation.",
+            "Understand the problem before requesting urgency.",
+            "Resolve the right problem faster.",
+            "Respect Product and Engineering prioritization after a complete investigation."]},
+  
+"career_preferences": {
+        "target_roles": [
+            "Product Operations",
+            "Solutions Engineer",
+            "Technical Customer Success",
+            "Technical Account Manager",
+            "Implementation Engineer"
+        ],
+        "preferred_work_model": [
+            "Remote",
+            "Contractor"
+        ],
+        "preferred_company_profile": [
+            "International company",
+            "Global operations",
+            "English-speaking work environment",
+            "B2B technology company"
+        ],
+        "preferred_industries": [
+            "Fintech",
+            "B2B SaaS",
+            "Payment Infrastructure",
+            "API Platforms",
+            "Artificial Intelligence",
+            "Cybersecurity",
+            "Identity Verification",
+            "Developer Tools"
+        ],
+        "preferred_responsibilities": [
+            "Investigating complex technical incidents",
+            "Reproducing bugs",
+            "Analyzing system behavior and data",
+            "Collaborating with Product and Engineering",
+            "Improving technical processes",
+            "Automating repetitive workflows",
+            "Supporting product pilots and rollouts"
+        ],
+        "avoid": [
+            "High-volume ticket handling as the primary responsibility",
+            "Technical Support roles in B2C or B2B2C companies",
+            "Roles without meaningful collaboration with Product or Engineering",
+            "Work arrangements that significantly restrict remote work and travel flexibility"
+        ],
+        "travel_flexibility": {
+            "desired": true,
+            "frequency": "Ability to travel approximately every three to four months"
+        },
+        "remote_only": true,
+        "english_work_environment": true },
+
+"experience": [
+    {
+        "id": "role-001",
+        "company": "PayJoy",
+        "industry": "Fintech",
+        "location": "Lima, Peru",
+        "work_model": "International and cross-functional environment",
+        "start_date": "",
+        "end_date": "",
+        "total_duration": "Approximately 6.5 years",
+        "roles": [
+        {
+            "title": "Technical Support Partner",
+            "start_date": "",
+            "end_date": "",
+            "summary": "Partnered closely with Product, Engineering and Customer Operations to investigate complex system incidents, reproduce bugs and reduce uncertainty before engineering implemented solutions.",
+            "core_responsibilities": [
+            "Investigated complex technical incidents across multiple markets and system flows.",
+            "Reproduced production bugs and documented expected versus actual behavior.",
+            "Narrowed down probable root causes using product behavior, system data and technical evidence.",
+            "Collaborated with Product and Engineering during incident resolution, pilots and product rollouts.",
+            "Translated technical findings into clear guidance for Customer Support and other non-technical stakeholders.",
+            "Identified opportunities to improve processes and reduce recurring technical issues."
+            ],
+            "business_impact": [
+            "Reduced the time Product and Engineering needed to understand ambiguous system problems.",
+            "Improved confidence in technical escalations by providing structured evidence before requesting prioritization.",
+            "Helped Customer Support teams respond to complex incidents with greater clarity and confidence.",
+            "Supported product pilots by identifying issues before broader rollout."
+            ],
+            "tools_and_methods": [
+            "Bug reproduction",
+            "Root cause analysis",
+            "Manual testing",
+            "SQL",
+            "REST APIs",
+            "System logs",
+            "Data analysis",
+            "Claude",
+            "Jira",
+            "Zendesk",
+            "Confluence"
+            ]
+        }
+        ]
+    }
+    ],
+  
+"projects": [
+  {
+    "id": "project-001",
+    "title": "",
+    "company": "",
+    "type": "",
+    "status": "",
+    "summary": "",
+    "business_problem": "",
+    "objective": "",
+    "my_role": "",
+    "responsibilities": [],
+    "tools": [],
+    "methodologies": [],
+    "what_i_learned": [],
+    "related_achievement_ids": [],
+    "related_story_ids": [],
+    "business_impact": {},
+    "claim_strength": {
+      "confidence": "",
+      "publicly_defensible": false,
+      "interview_ready": false
+    },
+    "tags": [] }
+],
+  
+"skills": [],
+  
+"tools": [],
+  
+"achievements": [
+            {
+        "id": "achievement-001",
+        "title": "Supported the removal of a technical blocker preventing an international product rollout",
+        "company": "PayJoy",
+        "business_problem": "Reduce the risk of merchant fraud by preventing unauthorized financing after a customer had already left the store.",
+        "technical_challenge": "The feature had already been developed, but a technical blocker prevented the rollout from expanding to multiple international markets.",
+        "my_contribution": [
+            "Participated in the product hackathon focused on validating the feature for broader rollout.",
+            "Designed and executed functional testing scenarios.",
+            "Reproduced complex bugs and documented technical findings.",
+            "Used Claude to accelerate technical investigation and bug reproduction.",
+            "Collaborated with Product to identify and validate issues preventing rollout expansion."
+        ],
+        "business_outcome": {
+            "summary": "Contributed to the validation efforts that helped remove a blocker preventing the feature from expanding internationally.",
+            "estimated_business_impact": {
+            "metric": "Estimated VGM",
+            "value": 4500000,
+            "currency": "USD",
+            "attribution": "Estimated impact associated with the product initiative after rollout. Impact resulted from a cross-functional team effort."
+            }
+        },
+        "rollout_scope": {
+            "type": "International",
+            "markets": [
+            "CO",
+            "MX",
+            "ID",
+            "PH",
+            "BR",
+            "EC",
+            "PE"
+            ]
+        },
+        "related_skills": [
+            "Manual Testing",
+            "Bug Reproduction",
+            "Root Cause Analysis",
+            "Cross-functional Collaboration",
+            "AI-assisted Investigation",
+            "Product Rollout Validation"
+        ],
+        "claim_strength": {
+            "confidence": "High",
+            "publicly_defensible": true,
+            "interview_ready": true
+        },
+        "public_notes": [
+            "Contribution focused on testing, technical investigation and bug reproduction.",
+            "The feature already existed before the hackathon; the work focused on removing the blocker that prevented broader rollout.",
+            "Avoid mentioning confidential implementation details or non-public product information."
+        ]
+        },
+    {
+        "title": "Future achievement",
+        "company": "",
+        "context": "",
+        "contribution": [],
+        "business_impact": {},
+        "related_skills": [],
+        "claim_strength": {
+        "confidence": "",
+        "publicly_defensible": false,
+        "interview_ready": false
+        },
+        "public_notes": []
+    }
+    ],
+  
+"professional_stories": [
+    {
+        "id": "story-001",
+        "title": "",
+        "summary": "",
+        "situation": "",
+        "challenge": "",
+        "actions": [],
+        "result": "",
+        "key_learnings": [],
+        "related_skills": [],
+        "related_achievements": [],
+        "tags": [],
+        "related_achievement_ids": []
+    }],
+  
+  "interview_examples": [],
+  
+  "languages": [],
+  
+  "education": [],
+  
+  "certifications": []
+}
