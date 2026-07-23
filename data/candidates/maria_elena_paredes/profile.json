@@ -137,30 +137,69 @@
     ],
   
 "projects": [
-  {
-    "id": "project-001",
-    "title": "",
-    "company": "",
-    "type": "",
-    "status": "",
-    "summary": "",
-    "business_problem": "",
-    "objective": "",
-    "my_role": "",
-    "responsibilities": [],
-    "tools": [],
-    "methodologies": [],
-    "what_i_learned": [],
-    "related_achievement_ids": [],
-    "related_story_ids": [],
-    "business_impact": {},
-    "claim_strength": {
-      "confidence": "",
-      "publicly_defensible": false,
-      "interview_ready": false
-    },
-    "tags": [] }
-],
+    {
+        "id": "project-001",
+        "title": "Career Copilot",
+        "company": "Independent Project",
+        "type": "AI Career Platform",
+        "status": "In Development",
+        "summary": "Building an AI-powered platform that helps professionals evaluate job opportunities and transform their career experience into reusable, evidence-based professional content.",
+        "business_problem": "Professionals often struggle to identify their strongest experience, tailor applications consistently and decide whether a job opportunity is worth pursuing.",
+        "objective": "Create a structured career knowledge base that can support job matching, resume generation, LinkedIn optimization, cover letters and interview preparation.",
+        "my_role": "Founder and Builder",
+        "responsibilities": [
+        "Defined the product vision and MVP scope.",
+        "Designed the candidate knowledge model.",
+        "Built a FastAPI backend.",
+        "Integrated Greenhouse job listings.",
+        "Created an initial opportunity scoring system.",
+        "Structured candidate preferences and professional evidence for AI-assisted recommendations."
+        ],
+        "tools": [
+        "Python",
+        "FastAPI",
+        "Git",
+        "GitHub",
+        "VS Code",
+        "Greenhouse API",
+        "Claude",
+        "ChatGPT"
+        ],
+        "methodologies": [
+        "MVP Development",
+        "API Integration",
+        "Data Modeling",
+        "Incremental Development",
+        "AI-assisted Development"
+        ],
+        "what_i_learned": [
+        "How to design a candidate profile as a reusable knowledge model instead of a static resume.",
+        "How to build and test API endpoints with FastAPI.",
+        "How to integrate external job data into a scoring workflow.",
+        "How to break a product vision into small, testable development steps."
+        ],
+        "related_achievement_ids": [],
+        "related_story_ids": [],
+        "business_impact": {
+        "current_stage": "Private beta development",
+        "target_users": 5,
+        "intended_value": "Reduce the time and uncertainty involved in evaluating and preparing job applications."
+        },
+        "claim_strength": {
+        "confidence": "High",
+        "publicly_defensible": true,
+        "interview_ready": true
+        },
+        "tags": [
+        "Artificial Intelligence",
+        "Career Technology",
+        "FastAPI",
+        "Product Development",
+        "Job Matching",
+        "Data Modeling"
+        ]
+    }
+    ],
   
 "skills": [],
   
