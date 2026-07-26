@@ -2,6 +2,10 @@
 # Default lookback window for /jobs. Convention: 0 or None means "no age limit".
 DEFAULT_MAX_AGE_DAYS = 14
 
+# --- Result ranking ---
+# Final cap applied to /jobs after scoring and ranking, across all providers combined.
+MAX_RESULTS = 20
+
 # --- Content scoring ---
 # Points awarded per distinct matched "concept" found in the job description.
 # A concept is either a synonym group below or a single term derived from the

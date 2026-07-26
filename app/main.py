@@ -33,16 +33,16 @@ def jobs(min_score: int = 70, max_age_days: int = Query(default=DEFAULT_MAX_AGE_
     return get_jobs(min_score, max_age_days)
 
 @app.get("/jobs/{job_id}")
-def read_job(job_id: int):
+def read_job(job_id: str):
     job = get_job(job_id)
 
     if job is None:
-        return {"error": "Job not found"}
+        raise HTTPException(status_code=404, detail="Job not found")
 
     return job
 
 @app.get("/jobs/{job_id}/summary")
-def read_job_summary(job_id: int):
+def read_job_summary(job_id: str):
     # NOTE: GET triggers a paid, uncached call to OpenAI. Fine for a single-user
     # private beta; must become POST (or gain caching) before more users share cost.
     job = get_job(job_id)
