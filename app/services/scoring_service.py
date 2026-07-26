@@ -1,10 +1,10 @@
 from app.config import REMOTE_KEYWORDS, TARGET_KEYWORDS
-from app.profile import PROFILE
+from app.services.candidate_service import get_scoring_profile, load_candidate_profile
 
 
 def calculate_score(job, profile=None):
     if profile is None:
-        profile = PROFILE
+        profile = get_scoring_profile(load_candidate_profile())
 
     score = 0
     title = job["title"].lower()

@@ -1,124 +1,170 @@
-
 {
-"identity": {
-        "full_name": "Maria Elena Paredes Gonzales",
-        "professional_headline": "",
-        "location": "Lima, Peru",
-        "timezone": "America/Lima",
-        "email": "",
-        "linkedin_url": "",
-        "github_url": "",
-        "portfolio_url": ""},
-
-"professional_identity": {
-        "mission": "I help Product and Engineering teams reduce technical uncertainty by transforming ambiguous system problems into evidence-based engineering decisions.",
-        "approach": "Through deep technical investigation, bug reproduction and root cause analysis, I enable teams to resolve the right problem faster, de-risk product rollouts, and build confidence across Engineering, Product and Customer Operations.",
-        "core_value": "Reduce technical uncertainty",
-        "target_teams": [
-            "Product",
-            "Engineering",
-            "Customer Operations"
-        ],
-        "professional_superpowers": [
-            {
-            "name": "Reduce Technical Uncertainty",
-            "description": "Transforms ambiguous technical incidents into structured, evidence-based investigations that support better decisions."
-            },
-            {
-            "name": "De-risk Product Rollouts",
-            "description": "Identifies and reproduces critical issues early so teams can scale product initiatives with greater confidence."
-            },
-            {
-            "name": "Build Cross-functional Trust",
-            "description": "Creates confidence across technical and non-technical teams through clear analysis, calm communication and reliable follow-through."
-            }],
-        "decision_principles": [
-            "Evidence before escalation.",
-            "Understand the problem before requesting urgency.",
-            "Resolve the right problem faster.",
-            "Respect Product and Engineering prioritization after a complete investigation."]},
-  
-"career_preferences": {
-        "target_roles": [
-            "Product Operations",
-            "Solutions Engineer",
-            "Technical Customer Success",
-            "Technical Account Manager",
-            "Implementation Engineer"
-        ],
-        "preferred_work_model": [
-            "Remote",
-            "Contractor"
-        ],
-        "preferred_company_profile": [
-            "International company",
-            "Global operations",
-            "English-speaking work environment",
-            "B2B technology company"
-        ],
-        "preferred_industries": [
-            "Fintech",
-            "B2B SaaS",
-            "Payment Infrastructure",
-            "API Platforms",
-            "Artificial Intelligence",
-            "Cybersecurity",
-            "Identity Verification",
-            "Developer Tools"
-        ],
-        "preferred_responsibilities": [
-            "Investigating complex technical incidents",
-            "Reproducing bugs",
-            "Analyzing system behavior and data",
-            "Collaborating with Product and Engineering",
-            "Improving technical processes",
-            "Automating repetitive workflows",
-            "Supporting product pilots and rollouts"
-        ],
-        "avoid": [
-            "High-volume ticket handling as the primary responsibility",
-            "Technical Support roles in B2C or B2B2C companies",
-            "Roles without meaningful collaboration with Product or Engineering",
-            "Work arrangements that significantly restrict remote work and travel flexibility"
-        ],
-        "travel_flexibility": {
-            "desired": true,
-            "frequency": "Ability to travel approximately every three to four months"
-        },
-        "remote_only": true,
-        "english_work_environment": true },
-
-"experience": [
+  "identity": {
+    "full_name": "Maria Elena Paredes Gonzales",
+    "professional_headline": "Technical Operations | Product Support | REST API Troubleshooting | AI Product Builder",
+    "location": "Lima, Peru",
+    "timezone": "America/Lima",
+    "email": "",
+    "linkedin_url": "https://www.linkedin.com/in/mariaelenaparedes/",
+    "github_url": "",
+    "portfolio_url": ""
+  },
+  "professional_identity": {
+    "mission": "I help Product and Engineering teams reduce technical uncertainty by transforming ambiguous system problems into evidence-based engineering decisions.",
+    "approach": "Through deep technical investigation, bug reproduction and root cause analysis, I enable teams to resolve the right problem faster, de-risk product rollouts, and build confidence across Engineering, Product and Customer Operations.",
+    "core_value": "Reduce technical uncertainty",
+    "target_teams": [
+      "Product",
+      "Engineering",
+      "Customer Operations"
+    ],
+    "professional_superpowers": [
+      {
+        "name": "Reduce Technical Uncertainty",
+        "description": "Transforms ambiguous technical incidents into structured, evidence-based investigations that support better decisions."
+      },
+      {
+        "name": "De-risk Product Rollouts",
+        "description": "Identifies and reproduces critical issues early so teams can scale product initiatives with greater confidence."
+      },
+      {
+        "name": "Build Cross-functional Trust",
+        "description": "Creates confidence across technical and non-technical teams through clear analysis, calm communication and reliable follow-through."
+      }
+    ],
+    "decision_principles": [
+      "Evidence before escalation.",
+      "Understand the problem before requesting urgency.",
+      "Resolve the right problem faster.",
+      "Respect Product and Engineering prioritization after a complete investigation."
+    ]
+  },
+  "career_preferences": {
+    "target_roles": [
+      "Product Operations",
+      "Solutions Engineer",
+      "Technical Customer Success",
+      "Technical Account Manager",
+      "Implementation Engineer"
+    ],
+    "target_companies": [
+      "Stripe",
+      "Brex",
+      "Ramp",
+      "OpenAI"
+    ],
+    "preferred_work_model": [
+      "Remote",
+      "Contractor"
+    ],
+    "preferred_company_profile": [
+      "International company",
+      "Global operations",
+      "English-speaking work environment",
+      "B2B technology company"
+    ],
+    "preferred_industries": [
+      "Fintech",
+      "B2B SaaS",
+      "Payment Infrastructure",
+      "API Platforms",
+      "Artificial Intelligence",
+      "Cybersecurity",
+      "Identity Verification",
+      "Developer Tools"
+    ],
+    "preferred_responsibilities": [
+      "Investigating complex technical incidents",
+      "Reproducing bugs",
+      "Analyzing system behavior and data",
+      "Collaborating with Product and Engineering",
+      "Improving technical processes",
+      "Automating repetitive workflows",
+      "Supporting product pilots and rollouts"
+    ],
+    "avoid": [
+      "High-volume ticket handling as the primary responsibility",
+      "Technical Support roles in B2C or B2B2C companies",
+      "Roles without meaningful collaboration with Product or Engineering",
+      "Work arrangements that significantly restrict remote work and travel flexibility"
+    ],
+    "travel_flexibility": {
+      "desired": true,
+      "frequency": "Ability to travel approximately every three to four months"
+    },
+    "remote_only": true,
+    "english_work_environment": true
+  },
+  "experience": [
     {
-        "id": "role-001",
-        "company": "PayJoy",
-        "industry": "Fintech",
-        "location": "Lima, Peru",
-        "work_model": "International and cross-functional environment",
-        "start_date": "",
-        "end_date": "",
-        "total_duration": "Approximately 6.5 years",
-        "roles": [
+      "id": "experience-001",
+      "company": "PayJoy",
+      "company_group": "PayJoy",
+      "location": "Lima, Peru",
+      "start_date": "2020-01",
+      "end_date": "2026-07",
+      "total_duration": "Approximately 6.5 years",
+      "employer_history": [
         {
-            "title": "Technical Support Partner",
-            "start_date": "",
-            "end_date": "",
-            "summary": "Partnered closely with Product, Engineering and Customer Operations to investigate complex system incidents, reproduce bugs and reduce uncertainty before engineering implemented solutions.",
-            "core_responsibilities": [
+          "legal_entity": "Adelantos Perú S.A.C.",
+          "start_date": "2020-01",
+          "end_date": "2021-12",
+          "transition": "Acquired by PayJoy in December 2021"
+        },
+        {
+          "legal_entity": "PayJoy Perú S.A.C.",
+          "start_date": "2021-12",
+          "end_date": "2026-07",
+          "transition": "Employment continued following PayJoy's acquisition of Adelantos Perú S.A.C."
+        }
+      ],
+      "roles": [
+        {
+          "title": "Customer Support Representative",
+          "start_date": "2020-01",
+          "end_date": "2020-12",
+          "legal_employer": "Adelantos Perú S.A.C.",
+          "summary": ""
+        },
+        {
+          "title": "Customer Support Supervisor",
+          "start_date": "2021-01",
+          "end_date": "2022-06",
+          "legal_employer_transition": {
+            "from": "Adelantos Perú S.A.C.",
+            "to": "PayJoy Perú S.A.C.",
+            "transition_date": "2021-12"
+          },
+          "summary": ""
+        },
+        {
+          "title": "Technical Support Associate",
+          "start_date": "2022-06",
+          "end_date": "2024-10",
+          "legal_employer": "PayJoy Perú S.A.C.",
+          "summary": ""
+        },
+        {
+          "title": "Technical Support Partner",
+          "start_date": "2024-10",
+          "end_date": "2026-07",
+          "legal_employer": "PayJoy Perú S.A.C.",
+          "summary": "Partnered closely with Product, Engineering and Customer Operations to investigate complex system incidents, reproduce bugs and reduce uncertainty before Engineering implemented solutions.",
+          "core_responsibilities": [
             "Investigated complex technical incidents across multiple markets and system flows.",
             "Reproduced production bugs and documented expected versus actual behavior.",
             "Narrowed down probable root causes using product behavior, system data and technical evidence.",
             "Collaborated with Product and Engineering during incident resolution, pilots and product rollouts.",
             "Translated technical findings into clear guidance for Customer Support and other non-technical stakeholders.",
             "Identified opportunities to improve processes and reduce recurring technical issues."
-            ],
-            "business_impact": [
+          ],
+          "business_impact": [
             "Reduced the time Product and Engineering needed to understand ambiguous system problems.",
             "Improved confidence in technical escalations by providing structured evidence before requesting prioritization.",
             "Helped Customer Support teams respond to complex incidents with greater clarity and confidence.",
             "Supported product pilots by identifying issues before broader rollout."
-            ],
-            "tools_and_methods": [
+          ],
+          "tools_and_methods": [
             "Bug reproduction",
             "Root cause analysis",
             "Manual testing",
@@ -130,172 +176,358 @@
             "Jira",
             "Zendesk",
             "Confluence"
-            ]
+          ]
         }
-        ]
+      ]
     }
-    ],
-  
-"projects": [
+  ],
+  "projects": [
     {
-        "id": "project-001",
-        "title": "Career Copilot",
-        "company": "Independent Project",
-        "type": "AI Career Platform",
-        "status": "In Development",
-        "summary": "Building an AI-powered platform that helps professionals evaluate job opportunities and transform their career experience into reusable, evidence-based professional content.",
-        "business_problem": "Professionals often struggle to identify their strongest experience, tailor applications consistently and decide whether a job opportunity is worth pursuing.",
-        "objective": "Create a structured career knowledge base that can support job matching, resume generation, LinkedIn optimization, cover letters and interview preparation.",
-        "my_role": "Founder and Builder",
-        "responsibilities": [
+      "id": "project-001",
+      "title": "Career Copilot",
+      "company": "Independent Project",
+      "type": "AI Career Platform",
+      "status": "In Development",
+      "summary": "Building an AI-powered platform that helps professionals evaluate job opportunities and transform their career experience into reusable, evidence-based professional content.",
+      "business_problem": "Professionals often struggle to identify their strongest experience, tailor applications consistently and decide whether a job opportunity is worth pursuing.",
+      "objective": "Create a structured career knowledge base that can support job matching, resume generation, LinkedIn optimization, cover letters and interview preparation.",
+      "my_role": "Founder and Builder",
+      "responsibilities": [
         "Defined the product vision and MVP scope.",
         "Designed the candidate knowledge model.",
         "Built a FastAPI backend.",
         "Integrated Greenhouse job listings.",
         "Created an initial opportunity scoring system.",
+        "Built AI-assisted n8n workflows for CV processing and guided career interviews.",
         "Structured candidate preferences and professional evidence for AI-assisted recommendations."
-        ],
-        "tools": [
+      ],
+      "tools": [
         "Python",
         "FastAPI",
         "Git",
         "GitHub",
         "VS Code",
         "Greenhouse API",
+        "n8n",
+        "OpenAI",
+        "Google Sheets",
         "Claude",
         "ChatGPT"
-        ],
-        "methodologies": [
+      ],
+      "methodologies": [
         "MVP Development",
         "API Integration",
         "Data Modeling",
+        "Workflow Automation",
         "Incremental Development",
         "AI-assisted Development"
-        ],
-        "what_i_learned": [
+      ],
+      "what_i_learned": [
         "How to design a candidate profile as a reusable knowledge model instead of a static resume.",
         "How to build and test API endpoints with FastAPI.",
         "How to integrate external job data into a scoring workflow.",
+        "How to build and troubleshoot AI-assisted workflows in n8n.",
         "How to break a product vision into small, testable development steps."
-        ],
-        "related_achievement_ids": [],
-        "related_story_ids": [],
-        "business_impact": {
+      ],
+      "related_achievement_ids": [],
+      "related_story_ids": [],
+      "business_impact": {
         "current_stage": "Private beta development",
         "target_users": 5,
         "intended_value": "Reduce the time and uncertainty involved in evaluating and preparing job applications."
-        },
-        "claim_strength": {
+      },
+      "claim_strength": {
         "confidence": "High",
         "publicly_defensible": true,
         "interview_ready": true
-        },
-        "tags": [
+      },
+      "tags": [
         "Artificial Intelligence",
         "Career Technology",
         "FastAPI",
+        "n8n",
+        "Workflow Automation",
         "Product Development",
         "Job Matching",
         "Data Modeling"
-        ]
+      ]
     }
-    ],
-  
-"skills": [],
-  
-"tools": [],
-  
-"achievements": [
-            {
-        "id": "achievement-001",
-        "title": "Supported the removal of a technical blocker preventing an international product rollout",
-        "company": "PayJoy",
-        "business_problem": "Reduce the risk of merchant fraud by preventing unauthorized financing after a customer had already left the store.",
-        "technical_challenge": "The feature had already been developed, but a technical blocker prevented the rollout from expanding to multiple international markets.",
-        "my_contribution": [
-            "Participated in the product hackathon focused on validating the feature for broader rollout.",
-            "Designed and executed functional testing scenarios.",
-            "Reproduced complex bugs and documented technical findings.",
-            "Used Claude to accelerate technical investigation and bug reproduction.",
-            "Collaborated with Product to identify and validate issues preventing rollout expansion."
-        ],
-        "business_outcome": {
-            "summary": "Contributed to the validation efforts that helped remove a blocker preventing the feature from expanding internationally.",
-            "estimated_business_impact": {
-            "metric": "Estimated VGM",
-            "value": 4500000,
-            "currency": "USD",
-            "attribution": "Estimated impact associated with the product initiative after rollout. Impact resulted from a cross-functional team effort."
-            }
-        },
-        "rollout_scope": {
-            "type": "International",
-            "markets": [
-            "CO",
-            "MX",
-            "ID",
-            "PH",
-            "BR",
-            "EC",
-            "PE"
-            ]
-        },
-        "related_skills": [
-            "Manual Testing",
-            "Bug Reproduction",
-            "Root Cause Analysis",
-            "Cross-functional Collaboration",
-            "AI-assisted Investigation",
-            "Product Rollout Validation"
-        ],
-        "claim_strength": {
-            "confidence": "High",
-            "publicly_defensible": true,
-            "interview_ready": true
-        },
-        "public_notes": [
-            "Contribution focused on testing, technical investigation and bug reproduction.",
-            "The feature already existed before the hackathon; the work focused on removing the blocker that prevented broader rollout.",
-            "Avoid mentioning confidential implementation details or non-public product information."
-        ]
-        },
+  ],
+  "skills": [
     {
-        "title": "Future achievement",
-        "company": "",
-        "context": "",
-        "contribution": [],
-        "business_impact": {},
-        "related_skills": [],
-        "claim_strength": {
-        "confidence": "",
-        "publicly_defensible": false,
-        "interview_ready": false
-        },
-        "public_notes": []
+      "name": "Technical Incident Investigation",
+      "category": "Technical Operations",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Investigated complex production incidents across multiple markets at PayJoy.",
+        "Collected technical evidence and narrowed probable root causes before escalation."
+      ]
+    },
+    {
+      "name": "Bug Reproduction",
+      "category": "Product Quality",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Designed reproducible test scenarios and documented expected versus actual behavior.",
+        "Identified issues affecting product pilots and international rollouts."
+      ]
+    },
+    {
+      "name": "Root Cause Analysis",
+      "category": "Problem Solving",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Combined system behavior, logs, data and testing results to investigate ambiguous technical problems."
+      ]
+    },
+    {
+      "name": "REST API Troubleshooting",
+      "category": "Technical Support",
+      "proficiency": "Intermediate",
+      "evidence": [
+        "Investigated API integrations and validated requests, responses and system behavior."
+      ]
+    },
+    {
+      "name": "SQL and Data Analysis",
+      "category": "Data",
+      "proficiency": "Intermediate",
+      "evidence": [
+        "Used SQL and operational data to validate hypotheses during technical investigations."
+      ]
+    },
+    {
+      "name": "Manual Testing",
+      "category": "Product Quality",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Designed and executed functional testing scenarios for product features and incident reproduction."
+      ]
+    },
+    {
+      "name": "Cross-functional Collaboration",
+      "category": "Collaboration",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Worked closely with Product, Engineering and Customer Operations during investigations and rollouts."
+      ]
+    },
+    {
+      "name": "Technical Communication",
+      "category": "Communication",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Translated technical findings into clear guidance for technical and non-technical stakeholders."
+      ]
+    },
+    {
+      "name": "Process Improvement",
+      "category": "Operations",
+      "proficiency": "Advanced",
+      "evidence": [
+        "Identified opportunities to reduce recurring problems and improve technical support processes."
+      ]
+    },
+    {
+      "name": "AI-assisted Investigation",
+      "category": "Artificial Intelligence",
+      "proficiency": "Intermediate",
+      "evidence": [
+        "Used Claude and ChatGPT to support investigation, bug reproduction and product development."
+      ]
+    },
+    {
+      "name": "AI-assisted Workflow Automation",
+      "category": "Automation",
+      "proficiency": "Intermediate",
+      "evidence": [
+        "Designed and tested n8n workflows that combine AI models, structured data processing and persistent storage.",
+        "Built a hosted conversational workflow that extracts candidate information from a CV and conducts an AI-guided career interview.",
+        "Diagnosed node outputs, data-mapping problems and structured-response errors during workflow development."
+      ]
     }
-    ],
-  
-"professional_stories": [
+  ],
+  "tools": [
     {
-        "id": "story-001",
-        "title": "",
-        "summary": "",
-        "situation": "",
-        "challenge": "",
-        "actions": [],
-        "result": "",
-        "key_learnings": [],
-        "related_skills": [],
-        "related_achievements": [],
-        "tags": [],
-        "related_achievement_ids": []
-    }],
-  
+      "name": "SQL",
+      "category": "Data",
+      "usage": "Querying and analyzing operational data during technical investigations."
+    },
+    {
+      "name": "REST APIs",
+      "category": "Integrations",
+      "usage": "Investigating integrations and validating API behavior."
+    },
+    {
+      "name": "Jira",
+      "category": "Issue Management",
+      "usage": "Documenting, tracking and collaborating on technical issues."
+    },
+    {
+      "name": "Zendesk",
+      "category": "Customer Support",
+      "usage": "Managing and investigating customer-related technical cases."
+    },
+    {
+      "name": "Confluence",
+      "category": "Documentation",
+      "usage": "Creating and consulting technical and operational documentation."
+    },
+    {
+      "name": "Claude",
+      "category": "Artificial Intelligence",
+      "usage": "Supporting technical investigation, testing and bug reproduction."
+    },
+    {
+      "name": "ChatGPT",
+      "category": "Artificial Intelligence",
+      "usage": "Supporting product design, documentation and development of Career Copilot."
+    },
+    {
+      "name": "Git",
+      "category": "Development",
+      "usage": "Managing source-code changes and project history."
+    },
+    {
+      "name": "GitHub",
+      "category": "Development",
+      "usage": "Hosting and maintaining the Career Copilot repository."
+    },
+    {
+      "name": "VS Code",
+      "category": "Development",
+      "usage": "Developing and maintaining Career Copilot."
+    },
+    {
+      "name": "Python",
+      "category": "Development",
+      "usage": "Building the Career Copilot backend with guided AI assistance."
+    },
+    {
+      "name": "FastAPI",
+      "category": "Development",
+      "usage": "Building and testing the Career Copilot REST API with guided AI assistance."
+    },
+    {
+      "name": "n8n",
+      "category": "Workflow Automation",
+      "usage": "Building AI-assisted workflows for CV processing, structured profile generation, conversational interviews and interaction storage."
+    }
+  ],
+  "achievements": [
+    {
+      "id": "achievement-001",
+      "title": "Supported the removal of a technical blocker preventing an international product rollout",
+      "company": "PayJoy",
+      "business_problem": "Reduce the risk of merchant fraud by preventing unauthorized financing after a customer had already left the store.",
+      "technical_challenge": "The feature had already been developed, but a technical blocker prevented the rollout from expanding to multiple international markets.",
+      "my_contribution": [
+        "Participated in the product hackathon focused on validating the feature for broader rollout.",
+        "Designed and executed functional testing scenarios.",
+        "Reproduced complex bugs and documented technical findings.",
+        "Used Claude to accelerate technical investigation and bug reproduction.",
+        "Collaborated with Product to identify and validate issues preventing rollout expansion."
+      ],
+      "business_outcome": {
+        "summary": "Contributed to the validation efforts that helped remove a blocker preventing the feature from expanding internationally.",
+        "estimated_business_impact": {
+          "metric": "Estimated VGM",
+          "value": 4500000,
+          "currency": "USD",
+          "attribution": "Estimated impact associated with the product initiative after rollout. Impact resulted from a cross-functional team effort."
+        }
+      },
+      "rollout_scope": {
+        "type": "International",
+        "markets": [
+          "CO",
+          "MX",
+          "ID",
+          "PH",
+          "BR",
+          "EC",
+          "PE"
+        ]
+      },
+      "related_skills": [
+        "Manual Testing",
+        "Bug Reproduction",
+        "Root Cause Analysis",
+        "Cross-functional Collaboration",
+        "AI-assisted Investigation",
+        "Product Rollout Validation"
+      ],
+      "claim_strength": {
+        "confidence": "High",
+        "publicly_defensible": true,
+        "interview_ready": true
+      },
+      "public_notes": [
+        "Contribution focused on testing, technical investigation and bug reproduction.",
+        "The feature already existed before the hackathon; the work focused on removing the blocker that prevented broader rollout.",
+        "Avoid mentioning confidential implementation details or non-public product information."
+      ]
+    }
+  ],
+  "professional_stories": [],
   "interview_examples": [],
-  
-  "languages": [],
-  
-  "education": [],
-  
-  "certifications": []
+  "languages": [
+    {
+      "language": "Spanish",
+      "proficiency": "Native",
+      "professional_use": "Native language used for stakeholder communication, technical investigation and documentation across Latin American operations."
+    },
+    {
+      "language": "English",
+      "proficiency": "Professional Working Proficiency",
+      "professional_use": "Used regularly to collaborate with Product, Engineering and international stakeholders in a global technology company."
+    },
+    {
+      "language": "Portuguese",
+      "proficiency": "Intermediate",
+      "professional_use": "Studied through intermediate level and used for everyday communication during two trips to Brazil. No professional working experience in Portuguese yet."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad de San Martín de Porres",
+      "degree": "Professional Degree in Communication Sciences",
+      "original_degree": "Licenciada en Ciencias de la Comunicación",
+      "field_of_study": "Communication Sciences",
+      "location": "Lima, Peru",
+      "start_date": "2005-07",
+      "end_date": "2012-12",
+      "status": "Completed"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "AI Agent Building",
+      "institution": "Colectivo23",
+      "start_date": "2026-05",
+      "expected_end_date": "2026-10",
+      "status": "In Progress",
+      "credential_url": null,
+      "expires": false
+    },
+    {
+      "name": "Web Programming Fundamentals and Full-Stack Development",
+      "institution": "Universidad de Ingeniería y Tecnología",
+      "start_date": "2025-07",
+      "end_date": "2025-11",
+      "status": "Completed",
+      "credential_url": "https://www.linkedin.com/in/mariaelenaparedes/overlay/Education/1111242992/treasury/?profileId=ACoAACl4Z4cByCpbnq7ttQ59MHLmx_tW4H6xqeg",
+      "expires": false
+    },
+    {
+      "name": "SQL and Data Modeling – SQL Server 2019",
+      "institution": "Cibertec",
+      "start_date": "2022-07",
+      "end_date": "2022-09",
+      "status": "Completed",
+      "credential_url": "https://www.linkedin.com/in/mariaelenaparedes/overlay/Education/841484195/treasury/?profileId=ACoAACl4Z4cByCpbnq7ttQ59MHLmx_tW4H6xqeg",
+      "expires": false
+    }
+  ]
 }
+
