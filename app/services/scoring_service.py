@@ -1,6 +1,8 @@
 import html
 import re
 
+import pycountry
+
 from app.config import (
     CONTENT_KEYWORD_POINTS,
     CONTENT_KEYWORD_SYNONYMS,
@@ -198,46 +200,113 @@ def calculate_remote_eligibility(job: dict, profile: dict = None) -> str:
     return "ambiguous"
 
 
+# Small set of general-language aliases that ISO country names don't cover
+# well (informal abbreviations, non-English exonyms). Applied only to the
+# structured `location` field, never to free-text descriptions, where these
+# short tokens ("us", "uk") would be too likely to match ordinary words.
+_COUNTRY_ALIAS_TOKENS = {
+    "brasil": "BR",
+    "usa": "US",
+    "u.s.": "US",
+    "us": "US",
+    "uk": "GB",
+}
+
+
+def _build_country_terms() -> dict:
+    """Map each tokenized country name/alias to its ISO alpha-2 code.
+
+    Built once from pycountry's `name`, `official_name` and `common_name` (when
+    present) plus a small alias table, so no per-candidate or per-job country
+    list needs to be hand-maintained.
+    """
+    terms = {}
+
+    for country in pycountry.countries:
+        for name_attr in ("name", "official_name", "common_name"):
+            name = getattr(country, name_attr, None)
+            if name:
+                tokens = tuple(_tokenize(name.lower()))
+                if tokens:
+                    terms[tokens] = country.alpha_2
+
+    for alias, alpha_2 in _COUNTRY_ALIAS_TOKENS.items():
+        tokens = tuple(_tokenize(alias))
+        if tokens:
+            terms[tokens] = alpha_2
+
+    return terms
+
+
+_COUNTRY_TERMS = _build_country_terms()
+
+
+def _detect_countries(tokens: list) -> set:
+    """Return every ISO alpha-2 code whose name/alias appears as a whole,
+    contiguous phrase in `tokens` -- e.g. ["united", "states"] matches "United
+    States" but a lone city or state name (e.g. "nevada") matches nothing,
+    since no country is named that way."""
+    return {
+        alpha_2
+        for term_tokens, alpha_2 in _COUNTRY_TERMS.items()
+        if _tokens_contain(tokens, list(term_tokens))
+    }
+
+
+def _resolve_country_code(name: str) -> str:
+    """Resolve a plain country name (e.g. profile `based_in: "Peru"`) to its
+    ISO alpha-2 code, or None if it isn't recognized."""
+    if not name:
+        return None
+    return _COUNTRY_TERMS.get(tuple(_tokenize(name.lower())))
+
+
 def calculate_geo_eligibility(job: dict, profile: dict = None) -> str:
     if profile is None:
         profile = get_scoring_profile(load_candidate_profile())
 
     location = job["location"]["name"].lower()
     description = _normalize_description(job.get("content", ""))
-    location_segments = [segment.strip() for segment in location.split(",") if segment.strip()]
-    acceptable_scopes = [
-        scope.lower() for scope in profile.get("geo_eligibility", {}).get("acceptable_scopes", [])
-    ]
+    location_tokens = _tokenize(location)
+
+    geo_profile = profile.get("geo_eligibility", {})
+    acceptable_scopes = [scope.lower() for scope in geo_profile.get("acceptable_scopes", [])]
+    based_in_country = _resolve_country_code(geo_profile.get("based_in"))
 
     location_has_acceptable_scope = any(
-        scope in segment for segment in location_segments for scope in acceptable_scopes
+        _tokens_contain(location_tokens, _tokenize(scope)) for scope in acceptable_scopes
     )
-    location_is_us_restricted = any("remote" in segment for segment in location_segments) and all(
-        segment.startswith("us-") or segment.startswith("us ") or segment == "us"
-        for segment in location_segments
-    )
-    location_has_us_only_phrase = any(phrase in location for phrase in GEO_US_ONLY_PHRASES)
     description_has_eligible_phrase = any(phrase in description for phrase in GEO_ELIGIBLE_DESCRIPTION_PHRASES)
+    location_has_us_only_phrase = any(phrase in location for phrase in GEO_US_ONLY_PHRASES)
     description_has_us_only_phrase = any(phrase in description for phrase in GEO_US_ONLY_PHRASES)
     mentions_ambiguous_scope = any(
         word in location or word in description for word in GEO_AMBIGUOUS_SCOPE_WORDS
     )
 
-    eligible_signal = location_has_acceptable_scope or description_has_eligible_phrase
-    not_eligible_signal = (
-        location_is_us_restricted or location_has_us_only_phrase or description_has_us_only_phrase
-    )
+    detected_countries = _detect_countries(location_tokens)
+    based_in_is_named = based_in_country is not None and based_in_country in detected_countries
 
-    if eligible_signal and not_eligible_signal:
-        return "ambiguous"
-
-    if eligible_signal:
+    # 1. An explicit hiring scope (Worldwide, Global, LATAM, Latin America,
+    #    South America, Peru...) is the strongest, most direct signal.
+    if location_has_acceptable_scope or description_has_eligible_phrase:
         return "eligible"
 
-    if not_eligible_signal:
+    # 2 & 7. The candidate's own country is explicitly named in the location --
+    #    even if other countries are also listed alongside it.
+    if based_in_is_named:
+        return "eligible"
+
+    # 3. One or more *other* countries are named, and none of them is the
+    #    candidate's -- a location naming a specific country restricts hiring
+    #    to that country, regardless of which broader region it belongs to
+    #    (e.g. Brazil being part of Latin America doesn't make a Brazil-only
+    #    posting open to candidates from all of LATAM).
+    if detected_countries or location_has_us_only_phrase or description_has_us_only_phrase:
         return "not_eligible"
 
+    # 4. "Americas" or similarly imprecise scope words, with nothing more specific.
     if mentions_ambiguous_scope:
         return "ambiguous"
 
+    # 5 & 6. Bare "remote" with no country/scope, or not enough information at all.
     return "ambiguous"

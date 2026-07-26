@@ -106,6 +106,74 @@ def test_normalize_job_defaults_missing_location():
     assert normalized["location"] == {"name": ""}
 
 
+def test_normalize_job_unescapes_html_entities_in_title():
+    raw = {**RAW_JOB, "position": "Growth &amp; Marketing Engineer"}
+
+    normalized = remoteok_client.normalize_job(raw)
+
+    assert normalized["title"] == "Growth & Marketing Engineer"
+
+
+def test_normalize_job_unescapes_html_entities_in_company_name():
+    raw = {**RAW_JOB, "company": "Tom &amp; Jerry Studios"}
+
+    normalized = remoteok_client.normalize_job(raw)
+
+    assert normalized["company_name"] == "Tom & Jerry Studios"
+
+
+def test_normalize_job_does_not_attempt_to_repair_mojibake():
+    # Genuine mojibake from the upstream feed is left untouched -- there is no
+    # reliable, risk-free way to detect and repair a mis-decoded string.
+    raw = {**RAW_JOB, "company": "SulAmÃ©rica"}
+
+    normalized = remoteok_client.normalize_job(raw)
+
+    assert normalized["company_name"] == "SulAmÃ©rica"
+
+
+# --- _is_usable / _looks_like_url: URL-like titles ---
+
+def test_is_usable_rejects_title_with_explicit_http_scheme():
+    raw = {**RAW_JOB, "position": "http://phase.community/job_role"}
+
+    assert remoteok_client._is_usable(raw) is False
+
+
+def test_is_usable_rejects_title_with_explicit_https_scheme():
+    raw = {**RAW_JOB, "position": "https://phase.community/job_role"}
+
+    assert remoteok_client._is_usable(raw) is False
+
+
+def test_is_usable_rejects_the_reported_schemeless_url_like_title():
+    raw = {**RAW_JOB, "position": "https phase.community job_role physical fitness"}
+
+    assert remoteok_client._is_usable(raw) is False
+
+
+def test_is_usable_keeps_legitimate_title_starting_with_http_word():
+    raw = {**RAW_JOB, "position": "HTTP Security Engineer"}
+
+    assert remoteok_client._is_usable(raw) is True
+
+
+def test_is_usable_keeps_legitimate_title_starting_with_https_word():
+    raw = {**RAW_JOB, "position": "HTTPS Integration Specialist"}
+
+    assert remoteok_client._is_usable(raw) is True
+
+
+def test_get_normalized_jobs_skips_url_like_title():
+    raw = {**RAW_JOB, "id": "999", "position": "https phase.community job_role physical fitness"}
+
+    with patch.object(remoteok_client, "get_remoteok_jobs", return_value=[RAW_JOB, raw]):
+        jobs = remoteok_client.get_normalized_jobs()
+
+    assert len(jobs) == 1
+    assert jobs[0]["source_job_id"] == "1234567"
+
+
 # --- get_remoteok_jobs: metadata discarding and response validation ---
 
 def test_get_remoteok_jobs_discards_the_legal_metadata_object():

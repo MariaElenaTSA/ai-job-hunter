@@ -21,6 +21,7 @@ FULL_PROFILE = {
     "skill_names": ["SQL and Data Analysis", "Root Cause Analysis"],
     "tool_names": ["SQL", "Zendesk"],
     "geo_eligibility": {
+        "based_in": "Peru",
         "acceptable_scopes": ["Worldwide", "Global", "Latin America", "LATAM", "South America", "Peru"],
     },
 }
@@ -334,3 +335,72 @@ def test_geo_eligibility_does_not_treat_generic_global_language_as_eligible():
     )
 
     assert calculate_geo_eligibility(job, profile=FULL_PROFILE) != "eligible"
+
+
+# --- calculate_geo_eligibility: country detection ---
+
+def test_geo_eligibility_not_eligible_for_specific_us_city_and_state():
+    job = make_job(location="Las Vegas, Nevada, United States")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_not_eligible_for_another_specific_us_city_and_state():
+    job = make_job(location="Chicago, Illinois, United States")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_not_eligible_for_uk_remote():
+    job = make_job(location="United Kingdom - Remote")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_not_eligible_for_brazil_only_location_with_peru_based_in():
+    # Brazil is geographically part of Latin America / South America, but a
+    # posting restricted to Brazil specifically does not open up to every
+    # LATAM candidate -- only an explicit regional scope or Peru itself would.
+    job = make_job(location="Rio de Janeiro, Brasil")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_eligible_for_remote_peru():
+    job = make_job(location="Remote - Peru")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "eligible"
+
+
+def test_geo_eligibility_eligible_for_bare_latin_america_scope():
+    job = make_job(location="Latin America")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "eligible"
+
+
+def test_geo_eligibility_eligible_when_based_in_country_is_named_among_several():
+    # Rule 7: a location listing multiple countries is eligible as long as the
+    # candidate's own country is one of them.
+    job = make_job(location="Peru, Chile, Colombia")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "eligible"
+
+
+def test_geo_eligibility_ambiguous_for_bare_remote_with_no_country_or_scope():
+    job = make_job(location="Remote")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "ambiguous"
+
+
+def test_geo_eligibility_ambiguous_for_unrecognizable_location_without_a_country():
+    job = make_job(location="Ontario")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "ambiguous"
+
+
+def test_geo_eligibility_ignores_state_names_when_country_is_not_reconizable():
+    # A bare city/state with no country mentioned must not be treated as a
+    # specific-country restriction -- that would be a false negative.
+    job = make_job(location="Springfield, Illinois")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "ambiguous"

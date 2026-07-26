@@ -1,3 +1,6 @@
+import html
+import re
+
 import requests
 
 from app.services.provider_errors import ProviderFetchError, ProviderResponseError
@@ -9,6 +12,19 @@ REMOTEOK_USER_AGENT = "CareerCopilot/1.0 (job-matching research tool)"
 # these would force us to invent data (an empty title, a guessed URL) to
 # satisfy the common job contract -- so such listings are skipped instead.
 _REQUIRED_RAW_FIELDS = ("id", "position", "company", "url")
+
+# A conservative check for feed entries where "position" is actually a URL,
+# not a job title (a known Remote OK data-quality issue). Matches an explicit
+# scheme ("http://", "https://"), or "http"/"https" followed by a domain-like
+# token (letters/digits/hyphens, a dot, more letters/digits/hyphens) -- e.g.
+# "https phase.community job_role...". Deliberately does NOT match on the bare
+# word "http"/"https" alone, so legitimate titles like "HTTP Security Engineer"
+# or "HTTPS Integration Specialist" are never filtered out.
+_URL_LIKE_TITLE_PATTERN = re.compile(r"^https?://|^https?\s+[\w-]+\.[\w-]+", re.IGNORECASE)
+
+
+def _looks_like_url(title: str) -> bool:
+    return bool(_URL_LIKE_TITLE_PATTERN.match(title.strip()))
 
 
 def get_remoteok_jobs() -> list:
@@ -30,7 +46,10 @@ def get_remoteok_jobs() -> list:
 
 
 def _is_usable(raw: dict) -> bool:
-    return all(raw.get(field) for field in _REQUIRED_RAW_FIELDS)
+    if not all(raw.get(field) for field in _REQUIRED_RAW_FIELDS):
+        return False
+
+    return not _looks_like_url(raw["position"])
 
 
 def normalize_job(raw: dict) -> dict:
@@ -40,6 +59,11 @@ def normalize_job(raw: dict) -> dict:
     scoring_service still checks the description for an explicit on-site
     requirement and resolves the conflict to "ambiguous" rather than trusting
     this label blindly.
+
+    Note: `raw` fields are HTML-unescaped (e.g. "Growth &amp; Marketing" ->
+    "Growth & Marketing"), but genuine mojibake from the upstream feed (e.g.
+    "SulAmÃ©rica") is left as-is -- there is no reliable way to repair a
+    mis-decoded string without risking corruption of correctly-encoded text.
     """
     source_job_id = str(raw["id"])
     source_url = raw["url"]
@@ -49,8 +73,8 @@ def normalize_job(raw: dict) -> dict:
         "id": f"remoteok:{source_job_id}",
         "source": "remoteok",
         "source_job_id": source_job_id,
-        "title": raw["position"],
-        "company_name": raw["company"],
+        "title": html.unescape(raw["position"]),
+        "company_name": html.unescape(raw["company"]),
         "location": {"name": raw.get("location") or ""},
         "workplace_type": "remote",
         "content": raw.get("description", ""),
