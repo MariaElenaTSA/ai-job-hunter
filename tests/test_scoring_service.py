@@ -260,6 +260,32 @@ def test_remote_eligibility_ambiguous_when_no_modality_signal_at_all():
     assert calculate_remote_eligibility(job) == "ambiguous"
 
 
+def test_remote_eligibility_eligible_when_workplace_type_is_remote():
+    job = make_job(location="Ireland", content="")
+    job["workplace_type"] = "remote"
+
+    assert calculate_remote_eligibility(job) == "eligible"
+
+
+def test_remote_eligibility_ambiguous_when_workplace_type_remote_conflicts_with_onsite_description():
+    job = make_job(
+        location="Ireland",
+        content="Employees are required to work from our office 3 days a week.",
+    )
+    job["workplace_type"] = "remote"
+
+    assert calculate_remote_eligibility(job) == "ambiguous"
+
+
+def test_remote_eligibility_greenhouse_workplace_type_none_is_unaffected():
+    # Greenhouse jobs carry workplace_type=None -- behavior must be identical
+    # to before this field existed.
+    job = make_job(location="New York", content="")
+    job["workplace_type"] = None
+
+    assert calculate_remote_eligibility(job) == "ambiguous"
+
+
 # --- calculate_geo_eligibility ---
 
 def test_geo_eligibility_eligible_for_worldwide_location():

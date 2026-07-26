@@ -177,8 +177,10 @@ def calculate_remote_eligibility(job: dict, profile: dict = None) -> str:
     location = job["location"]["name"].lower()
     description = _normalize_description(job.get("content", ""))
 
-    remote_signal = any(keyword in location for keyword in REMOTE_LOCATION_KEYWORDS) or any(
-        phrase in description for phrase in REMOTE_DESCRIPTION_PHRASES
+    remote_signal = (
+        job.get("workplace_type") == "remote"
+        or any(keyword in location for keyword in REMOTE_LOCATION_KEYWORDS)
+        or any(phrase in description for phrase in REMOTE_DESCRIPTION_PHRASES)
     )
     onsite_signal = any(keyword in location for keyword in ONSITE_LOCATION_KEYWORDS) or any(
         phrase in description for phrase in ONSITE_DESCRIPTION_PHRASES

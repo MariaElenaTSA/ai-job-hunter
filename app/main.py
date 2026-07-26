@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, Query
 from app.config import DEFAULT_MAX_AGE_DAYS
-from app.services.job_service import get_jobs, get_job
+from app.profile import MIN_SCORE
+from app.services.job_service import AllProvidersFailedError, UnknownSourceError, get_jobs, get_job
+from app.services.provider_errors import ProviderError
 from app.services.ai_service import (
     AIServiceConfigError,
     AIServiceIncompleteResponseError,
@@ -28,13 +30,25 @@ def health():
     }
 
 @app.get("/jobs")
-def jobs(min_score: int = 70, max_age_days: int = Query(default=DEFAULT_MAX_AGE_DAYS, ge=0)):
+def jobs(
+    min_score: int = MIN_SCORE,
+    max_age_days: int = Query(default=DEFAULT_MAX_AGE_DAYS, ge=0),
+    sources: str | None = Query(default=None),
+):
     # Convention: 0 means "no age limit" (job_service treats 0 and None the same way).
-    return get_jobs(min_score, max_age_days)
+    try:
+        return get_jobs(min_score, max_age_days, sources)
+    except UnknownSourceError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except AllProvidersFailedError as error:
+        raise HTTPException(status_code=502, detail=str(error))
 
 @app.get("/jobs/{job_id}")
 def read_job(job_id: str):
-    job = get_job(job_id)
+    try:
+        job = get_job(job_id)
+    except ProviderError as error:
+        raise HTTPException(status_code=502, detail=str(error))
 
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -45,10 +59,13 @@ def read_job(job_id: str):
 def read_job_summary(job_id: str):
     # NOTE: GET triggers a paid, uncached call to OpenAI. Fine for a single-user
     # private beta; must become POST (or gain caching) before more users share cost.
-    job = get_job(job_id)
+    try:
+        job = get_job(job_id)
+    except ProviderError as error:
+        raise HTTPException(status_code=502, detail=str(error))
 
     if job is None:
-        return {"error": "Job not found"}
+        raise HTTPException(status_code=404, detail="Job not found")
 
     if not job["has_description"]:
         raise HTTPException(status_code=400, detail="Job has no description to analyze")

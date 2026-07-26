@@ -1,8 +1,10 @@
+import logging
 from datetime import datetime, timedelta, timezone
 
 from app.config import DEFAULT_MAX_AGE_DAYS, MAX_RESULTS
-from app.services import greenhouse_client
+from app.services import greenhouse_client, remoteok_client
 from app.services.candidate_service import get_scoring_profile, load_candidate_profile
+from app.services.provider_errors import ProviderError
 from app.services.scoring_service import (
     calculate_geo_eligibility,
     calculate_remote_eligibility,
@@ -10,12 +12,60 @@ from app.services.scoring_service import (
 )
 from app.profile import MIN_SCORE
 
+logger = logging.getLogger(__name__)
+
 # Single source of truth for which providers exist and how to reach them.
 # Adding a provider means adding one entry here -- nothing else keeps its own
 # list of source names.
 PROVIDERS = {
     "greenhouse": greenhouse_client.get_normalized_jobs,
+    "remoteok": remoteok_client.get_normalized_jobs,
 }
+
+
+class UnknownSourceError(ValueError):
+    """Raised when `sources` names something outside PROVIDERS, or resolves to nothing."""
+
+
+class AllProvidersFailedError(Exception):
+    """Raised when every requested provider raised a ProviderError."""
+
+
+def _resolve_provider_names(sources: str | None) -> list[str]:
+    if sources is None:
+        return list(PROVIDERS.keys())
+
+    requested = []
+    for name in sources.split(","):
+        normalized = name.strip().lower()
+        if normalized and normalized not in requested:
+            requested.append(normalized)
+
+    if not requested:
+        raise UnknownSourceError("No source provided")
+
+    unknown = [name for name in requested if name not in PROVIDERS]
+    if unknown:
+        raise UnknownSourceError(f"Unknown source(s): {', '.join(unknown)}")
+
+    return requested
+
+
+def _fetch_provider_jobs(provider_names: list[str]) -> list[dict]:
+    normalized_jobs = []
+    succeeded = False
+
+    for name in provider_names:
+        try:
+            normalized_jobs.extend(PROVIDERS[name]())
+            succeeded = True
+        except ProviderError as error:
+            logger.warning("Provider %r failed and was skipped: %s", name, error)
+
+    if not succeeded:
+        raise AllProvidersFailedError(f"All requested providers failed: {', '.join(provider_names)}")
+
+    return normalized_jobs
 
 def format_job(job, profile):
     return {
@@ -92,13 +142,15 @@ def _parse_job_id(job_id: str) -> tuple[str, str]:
     # Backward compatibility: pre-multi-provider IDs had no source prefix.
     return "greenhouse", job_id
 
-def get_jobs(min_score: int = MIN_SCORE, max_age_days: int | None = DEFAULT_MAX_AGE_DAYS):
+def get_jobs(
+    min_score: int = MIN_SCORE,
+    max_age_days: int | None = DEFAULT_MAX_AGE_DAYS,
+    sources: str | None = None,
+):
+    provider_names = _resolve_provider_names(sources)
     profile = get_scoring_profile(load_candidate_profile())
 
-    normalized_jobs = []
-    for get_provider_jobs in PROVIDERS.values():
-        normalized_jobs.extend(get_provider_jobs())
-
+    normalized_jobs = _fetch_provider_jobs(provider_names)
     normalized_jobs = [job for job in normalized_jobs if _is_within_max_age(job, max_age_days)]
 
     jobs = [format_job(job, profile) for job in normalized_jobs]

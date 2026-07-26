@@ -1,7 +1,11 @@
+import logging
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import pytest
 
 from app.services import job_service
+from app.services.provider_errors import ProviderFetchError, ProviderResponseError
 
 
 def make_normalized_job(
@@ -12,18 +16,20 @@ def make_normalized_job(
     content="",
     first_published=None,
     updated_at=None,
+    source="greenhouse",
+    workplace_type=None,
 ):
     source_job_id = str(source_job_id)
     url = f"https://example.com/{source_job_id}"
 
     return {
-        "id": f"greenhouse:{source_job_id}",
-        "source": "greenhouse",
+        "id": f"{source}:{source_job_id}",
+        "source": source,
         "source_job_id": source_job_id,
         "title": title,
         "company_name": company_name,
         "location": {"name": location_name},
-        "workplace_type": None,
+        "workplace_type": workplace_type,
         "content": content,
         "first_published": first_published,
         "updated_at": updated_at,
@@ -36,8 +42,33 @@ def make_normalized_job(
     }
 
 
+def patch_providers(greenhouse=None, remoteok=None):
+    """Patch both providers at once so no test call ever reaches the real
+    Greenhouse or Remote OK APIs, even when a test only cares about one of them."""
+
+    def make_getter(jobs_or_error):
+        if isinstance(jobs_or_error, Exception):
+            def raise_error():
+                raise jobs_or_error
+            return raise_error
+        jobs = jobs_or_error if jobs_or_error is not None else []
+        return lambda: jobs
+
+    return patch.dict(
+        job_service.PROVIDERS,
+        {
+            "greenhouse": make_getter(greenhouse),
+            "remoteok": make_getter(remoteok),
+        },
+    )
+
+
 def patch_greenhouse(jobs):
-    return patch.dict(job_service.PROVIDERS, {"greenhouse": lambda: jobs})
+    return patch_providers(greenhouse=jobs)
+
+
+def patch_remoteok(jobs):
+    return patch_providers(remoteok=jobs)
 
 
 # A profile with no keyword overlap with our test titles/content, so score
@@ -288,3 +319,148 @@ def test_get_jobs_ranking_tolerates_missing_or_invalid_dates():
 
     assert len(result) == 3  # no exception raised, nothing dropped
     assert result[0]["source_job_id"] == "1"  # the valid, recent date ranks first among ties
+
+
+# --- Multi-provider: sources selection ---
+
+FAKE_REMOTEOK_JOBS = [
+    make_normalized_job(
+        101, source="remoteok", workplace_type="remote",
+        title="Backend Engineer IV", location_name="Worldwide", company_name="RemoteCo",
+    ),
+]
+
+
+def test_get_jobs_with_no_sources_combines_all_providers():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0)
+
+    ids = {job["source_job_id"] for job in result}
+    assert "1" in ids  # greenhouse
+    assert "101" in ids  # remoteok
+
+
+def test_get_jobs_sources_greenhouse_only_excludes_remoteok():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0, sources="greenhouse")
+
+    ids = {job["source_job_id"] for job in result}
+    assert "101" not in ids
+
+
+def test_get_jobs_sources_remoteok_only_excludes_greenhouse():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0, sources="remoteok")
+
+    ids = {job["source_job_id"] for job in result}
+    assert ids == {"101"}
+
+
+def test_get_jobs_sources_combined_with_whitespace_and_duplicates():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0, sources=" Greenhouse ,remoteok, greenhouse")
+
+    ids = {job["source_job_id"] for job in result}
+    assert "1" in ids
+    assert "101" in ids
+
+
+def test_get_jobs_sources_empty_string_raises_unknown_source_error():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS):
+        with pytest.raises(job_service.UnknownSourceError):
+            job_service.get_jobs(sources="")
+
+
+def test_get_jobs_sources_only_commas_and_spaces_raises_unknown_source_error():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS):
+        with pytest.raises(job_service.UnknownSourceError):
+            job_service.get_jobs(sources=" , , ")
+
+
+def test_get_jobs_sources_unknown_name_raises_unknown_source_error():
+    with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS):
+        with pytest.raises(job_service.UnknownSourceError):
+            job_service.get_jobs(sources="bogus")
+
+
+# --- Multi-provider: partial and total failure ---
+
+def test_get_jobs_partial_failure_returns_the_working_providers_results(caplog):
+    with patch_providers(greenhouse=ProviderFetchError("greenhouse down"), remoteok=FAKE_REMOTEOK_JOBS), \
+         patch_fixed_profile(), \
+         caplog.at_level(logging.WARNING):
+        result = job_service.get_jobs(min_score=0, max_age_days=0)
+
+    ids = {job["source_job_id"] for job in result}
+    assert ids == {"101"}
+    assert any("greenhouse" in record.getMessage() for record in caplog.records)
+
+
+def test_get_jobs_total_failure_raises_all_providers_failed_error():
+    with patch_providers(
+        greenhouse=ProviderFetchError("greenhouse down"),
+        remoteok=ProviderResponseError("remoteok bad payload"),
+    ):
+        with pytest.raises(job_service.AllProvidersFailedError):
+            job_service.get_jobs(min_score=0, max_age_days=0)
+
+
+def test_get_jobs_all_providers_succeed_with_no_jobs_returns_empty_list():
+    with patch_providers(greenhouse=[], remoteok=[]):
+        result = job_service.get_jobs(min_score=0, max_age_days=0)
+
+    assert result == []
+
+
+def test_get_jobs_does_not_absorb_unexpected_programming_errors():
+    def raise_type_error():
+        raise TypeError("unexpected bug, not a provider outage")
+
+    with patch.dict(job_service.PROVIDERS, {"greenhouse": raise_type_error, "remoteok": lambda: []}):
+        with pytest.raises(TypeError):
+            job_service.get_jobs(min_score=0, max_age_days=0)
+
+
+# --- Multi-provider: top 20 applies after combining ---
+
+def test_get_jobs_caps_at_20_after_combining_both_providers():
+    now = datetime.now(timezone.utc)
+    greenhouse_jobs = [
+        make_normalized_job(
+            i + 1, title="Backend Engineer IV", location_name="Remote - LATAM",
+            first_published=(now - timedelta(days=i)).isoformat().replace("+00:00", "Z"),
+        )
+        for i in range(15)
+    ]
+    remoteok_jobs = [
+        make_normalized_job(
+            i + 1, source="remoteok", workplace_type="remote",
+            title="Backend Engineer IV", location_name="Worldwide",
+            first_published=(now - timedelta(days=i)).isoformat().replace("+00:00", "Z"),
+        )
+        for i in range(15)
+    ]
+
+    with patch_providers(greenhouse=greenhouse_jobs, remoteok=remoteok_jobs), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0)
+
+    assert len(result) == 20  # combined pool has 30 candidates, capped only after merging both providers
+
+
+# --- get_job: provider isolation and failure propagation ---
+
+def test_get_job_remoteok_id_only_queries_remoteok_provider():
+    greenhouse_mock = Mock(return_value=[])
+
+    with patch.dict(job_service.PROVIDERS, {"greenhouse": greenhouse_mock, "remoteok": lambda: FAKE_REMOTEOK_JOBS}):
+        job = job_service.get_job("remoteok:101")
+
+    assert job is not None
+    assert job["source"] == "remoteok"
+    greenhouse_mock.assert_not_called()
+
+
+def test_get_job_raises_provider_error_when_its_provider_is_down():
+    with patch_providers(remoteok=ProviderFetchError("remoteok down")):
+        with pytest.raises(ProviderFetchError):
+            job_service.get_job("remoteok:1")

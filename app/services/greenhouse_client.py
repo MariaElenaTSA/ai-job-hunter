@@ -1,12 +1,23 @@
 import requests
 
+from app.services.provider_errors import ProviderFetchError, ProviderResponseError
+
 GREENHOUSE_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs?content=true"
 
 
 def get_greenhouse_jobs():
-    response = requests.get(GREENHOUSE_URL, timeout=10)
-    response.raise_for_status()
-    return response.json()["jobs"]
+    try:
+        response = requests.get(GREENHOUSE_URL, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as error:
+        raise ProviderFetchError(f"Greenhouse request failed: {error}") from error
+
+    payload = response.json()
+
+    if not isinstance(payload, dict) or not isinstance(payload.get("jobs"), list):
+        raise ProviderResponseError("Greenhouse response is missing a 'jobs' list")
+
+    return payload["jobs"]
 
 
 def normalize_job(raw: dict) -> dict:

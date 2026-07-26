@@ -1,6 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import pytest
+import requests
 
 from app.services import greenhouse_client
+from app.services.provider_errors import ProviderFetchError, ProviderResponseError
 
 RAW_JOB = {
     "id": 5148165,
@@ -74,3 +78,31 @@ def test_get_normalized_jobs_normalizes_every_raw_job():
 
     assert len(jobs) == 1
     assert jobs[0]["id"] == "greenhouse:5148165"
+
+
+# --- Provider error policy ---
+
+def test_get_greenhouse_jobs_wraps_request_exception_in_provider_fetch_error():
+    with patch.object(greenhouse_client.requests, "get", side_effect=requests.ConnectionError("boom")):
+        with pytest.raises(ProviderFetchError) as exc_info:
+            greenhouse_client.get_greenhouse_jobs()
+
+    assert isinstance(exc_info.value.__cause__, requests.ConnectionError)
+
+
+def test_get_greenhouse_jobs_raises_provider_response_error_when_jobs_key_is_not_a_list():
+    fake_response = Mock()
+    fake_response.json.return_value = {"jobs": "not-a-list"}
+
+    with patch.object(greenhouse_client.requests, "get", return_value=fake_response):
+        with pytest.raises(ProviderResponseError):
+            greenhouse_client.get_greenhouse_jobs()
+
+
+def test_get_greenhouse_jobs_raises_provider_response_error_when_payload_is_not_a_dict():
+    fake_response = Mock()
+    fake_response.json.return_value = ["not", "a", "dict"]
+
+    with patch.object(greenhouse_client.requests, "get", return_value=fake_response):
+        with pytest.raises(ProviderResponseError):
+            greenhouse_client.get_greenhouse_jobs()
