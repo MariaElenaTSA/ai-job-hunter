@@ -1,4 +1,5 @@
 from app.services.scoring_service import (
+    _score_breakdown,
     calculate_geo_eligibility,
     calculate_remote_eligibility,
     calculate_score,
@@ -23,6 +24,31 @@ FULL_PROFILE = {
         "acceptable_scopes": ["Worldwide", "Global", "Latin America", "LATAM", "South America", "Peru"],
     },
 }
+
+GIT_TOOL_PROFILE = {
+    "target_roles": [],
+    "preferred_responsibilities": [],
+    "skill_names": [],
+    "tool_names": ["Git"],
+}
+
+CROSS_FUNCTIONAL_SKILL_PROFILE = {
+    "target_roles": [],
+    "preferred_responsibilities": [],
+    "skill_names": ["Cross-functional Collaboration"],
+    "tool_names": [],
+}
+
+SECURITY_ENGINEER_FIXTURE_CONTENT = (
+    "We conduct penetration testing and red team engagements. "
+    "Our team builds custom tooling and automation frameworks, "
+    "working cross-functional with every stakeholder across engineering. "
+    "You will support incident investigations and root cause analysis. "
+    "Strong programming skills in Python are required to test web applications and APIs. "
+    "We use big data log analysis tools such as osquery for threat hunting. "
+    "Familiarity with AI-assisted development tools such as Claude Code, Cursor "
+    "and GitHub Copilot is a plus."
+)
 
 
 # --- calculate_score ---
@@ -89,6 +115,111 @@ def test_calculate_score_ignores_company_name():
     job_other = make_job(company_name="RandomCo", content="SQL and REST API work.")
 
     assert calculate_score(job_stripe, profile=FULL_PROFILE) == calculate_score(job_other, profile=FULL_PROFILE)
+
+
+def test_calculate_score_git_tool_does_not_match_inside_github():
+    job = make_job(
+        title="Backend Engineer",
+        content="We use GitHub for source control and code review.",
+    )
+
+    score = calculate_score(job, profile=GIT_TOOL_PROFILE)
+
+    assert score == 0
+
+
+def test_calculate_score_query_synonym_does_not_match_inside_osquery():
+    job = make_job(
+        title="Backend Engineer",
+        content="We rely on osquery for endpoint telemetry.",
+    )
+
+    score = calculate_score(job, profile=FULL_PROFILE)
+
+    assert score == 0
+
+
+def test_calculate_score_merges_root_cause_and_root_cause_analysis_as_one_concept():
+    job = make_job(
+        title="Backend Engineer",
+        content="We investigate root cause analysis after a production incident.",
+    )
+
+    score = calculate_score(job, profile=FULL_PROFILE)
+
+    assert score == 8  # "root cause" (synonym) and "root cause analysis" (skill) are one concept
+
+
+def test_calculate_score_merges_cross_functional_and_cross_functional_collaboration():
+    job = make_job(
+        title="Backend Engineer",
+        content="This role requires strong cross-functional collaboration with other teams.",
+    )
+
+    score = calculate_score(job, profile=CROSS_FUNCTIONAL_SKILL_PROFILE)
+
+    assert score == 8  # "cross-functional" (synonym) and the skill name are one concept
+
+
+def test_calculate_score_still_matches_api_and_apis_as_explicit_plurals():
+    job_singular = make_job(title="Backend Engineer", content="Our platform exposes a public API for partners.")
+    job_plural = make_job(title="Backend Engineer", content="Our platform exposes public APIs for partners.")
+
+    assert calculate_score(job_singular, profile=FULL_PROFILE) == 8
+    assert calculate_score(job_plural, profile=FULL_PROFILE) == 8
+
+
+def test_calculate_score_treats_hyphen_and_space_as_equivalent_separators():
+    job_hyphen = make_job(title="Backend Engineer", content="This role needs strong cross-functional teamwork.")
+    job_space = make_job(title="Backend Engineer", content="This role needs strong cross functional teamwork.")
+
+    assert calculate_score(job_hyphen, profile=FULL_PROFILE) == calculate_score(job_space, profile=FULL_PROFILE)
+    assert calculate_score(job_space, profile=FULL_PROFILE) == 8
+
+
+def test_calculate_score_matches_root_cause_analysis_across_hyphen_and_space_variants():
+    job = make_job(
+        title="Backend Engineer",
+        content="We rely on root-cause analysis to resolve production incidents.",
+    )
+
+    score = calculate_score(job, profile=FULL_PROFILE)
+
+    assert score == 8  # "root-cause analysis" still matches the "root cause analysis" skill as one concept
+
+
+def test_calculate_score_security_engineer_fixture_scores_64_not_80():
+    job = make_job(
+        title="Security Engineer - Offensive Security",
+        location="Ireland",
+        content=SECURITY_ENGINEER_FIXTURE_CONTENT,
+    )
+
+    score = calculate_score(job)  # uses the real candidate profile, like the reported false positive
+
+    assert score == 64
+
+
+def test_score_breakdown_keeps_title_score_for_solutions_engineer():
+    job = make_job(title="Solutions Engineer", content="")
+
+    breakdown = _score_breakdown(job, profile=FULL_PROFILE)
+
+    assert breakdown["title_score"] == 20
+
+
+def test_score_breakdown_keeps_title_score_for_implementation_engineer():
+    job = make_job(title="Implementation Engineer", content="")
+
+    breakdown = _score_breakdown(job, profile=FULL_PROFILE)
+
+    assert breakdown["title_score"] == 20
+
+
+def test_calculate_score_returns_the_breakdowns_final_score():
+    job = make_job(title="Backend Engineer", content="Troubleshoot incidents and analyze APIs.")
+
+    assert calculate_score(job, profile=FULL_PROFILE) == _score_breakdown(job, profile=FULL_PROFILE)["final_score"]
 
 
 # --- calculate_remote_eligibility ---
