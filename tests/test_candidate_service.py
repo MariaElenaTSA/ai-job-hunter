@@ -16,7 +16,7 @@ def test_load_candidate_profile_returns_dict_with_expected_keys():
     candidate = load_candidate_profile()
 
     assert "career_preferences" in candidate
-    assert "target_companies" in candidate["career_preferences"]
+    assert "geo_eligibility" in candidate["career_preferences"]
 
 
 def test_load_candidate_profile_missing_file_raises():
@@ -33,18 +33,37 @@ def test_load_candidate_profile_invalid_json_raises():
         load_candidate_profile(invalid_path)
 
 
-def test_get_scoring_profile_reads_target_companies_from_career_preferences():
-    candidate = {"career_preferences": {"target_companies": ["Stripe", "Brex"]}}
+def test_get_scoring_profile_reads_role_and_geo_preferences_from_career_preferences():
+    candidate = {
+        "career_preferences": {
+            "target_roles": ["Solutions Engineer"],
+            "preferred_responsibilities": ["Investigating complex technical incidents"],
+            "remote_only": True,
+            "geo_eligibility": {"acceptable_scopes": ["Peru", "LATAM"]},
+        },
+        "skills": [{"name": "Root Cause Analysis"}],
+        "tools": [{"name": "SQL"}],
+    }
 
     profile = get_scoring_profile(candidate)
 
-    assert profile["target_companies"] == ["Stripe", "Brex"]
+    assert profile["target_roles"] == ["Solutions Engineer"]
+    assert profile["preferred_responsibilities"] == ["Investigating complex technical incidents"]
+    assert profile["skill_names"] == ["Root Cause Analysis"]
+    assert profile["tool_names"] == ["SQL"]
+    assert profile["remote_only"] is True
+    assert profile["geo_eligibility"] == {"acceptable_scopes": ["Peru", "LATAM"]}
 
 
 def test_get_scoring_profile_handles_missing_career_preferences():
     profile = get_scoring_profile({})
 
-    assert profile["target_companies"] == []
+    assert profile["target_roles"] == []
+    assert profile["preferred_responsibilities"] == []
+    assert profile["skill_names"] == []
+    assert profile["tool_names"] == []
+    assert profile["remote_only"] is False
+    assert profile["geo_eligibility"] == {}
 
 
 FAKE_CANDIDATE = {

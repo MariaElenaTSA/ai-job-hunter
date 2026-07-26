@@ -1,6 +1,10 @@
 from app.services.candidate_service import get_scoring_profile, load_candidate_profile
 from app.services.greenhouse_client import get_greenhouse_jobs
-from app.services.scoring_service import calculate_score
+from app.services.scoring_service import (
+    calculate_geo_eligibility,
+    calculate_remote_eligibility,
+    calculate_score,
+)
 from app.profile import MIN_SCORE
 
 def format_job(job, profile):
@@ -18,6 +22,8 @@ def format_job(job, profile):
         "description_length": len(job.get("content", "")),
         "has_description": bool(job.get("content")),
         "score": calculate_score(job, profile=profile),
+        "remote_eligibility": calculate_remote_eligibility(job, profile=profile),
+        "geo_eligibility": calculate_geo_eligibility(job, profile=profile),
     }
 
 def get_jobs(min_score: int = MIN_SCORE):

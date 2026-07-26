@@ -47,12 +47,18 @@
       "Technical Account Manager",
       "Implementation Engineer"
     ],
-    "target_companies": [
-      "Stripe",
-      "Brex",
-      "Ramp",
-      "OpenAI"
-    ],
+    "geo_eligibility": {
+      "based_in": "Peru",
+      "requires_international_hiring": true,
+      "acceptable_scopes": [
+        "Worldwide",
+        "Global",
+        "Latin America",
+        "LATAM",
+        "South America",
+        "Peru"
+      ]
+    },
     "preferred_work_model": [
       "Remote",
       "Contractor"

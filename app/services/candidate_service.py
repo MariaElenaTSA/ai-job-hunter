@@ -24,7 +24,12 @@ def get_scoring_profile(candidate: dict) -> dict:
     career_preferences = candidate.get("career_preferences", {})
 
     return {
-        "target_companies": career_preferences.get("target_companies", []),
+        "target_roles": career_preferences.get("target_roles", []),
+        "preferred_responsibilities": career_preferences.get("preferred_responsibilities", []),
+        "skill_names": [skill["name"] for skill in candidate.get("skills", [])],
+        "tool_names": [tool["name"] for tool in candidate.get("tools", [])],
+        "remote_only": career_preferences.get("remote_only", False),
+        "geo_eligibility": career_preferences.get("geo_eligibility", {}),
     }
 
 

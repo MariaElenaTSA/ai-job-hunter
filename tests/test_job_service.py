@@ -43,3 +43,20 @@ def test_get_job_returns_scored_job():
     assert job is not None
     assert job["id"] == 1
     assert job["score"] > 0
+
+
+def test_get_job_includes_remote_and_geo_eligibility():
+    with patch.object(job_service, "get_greenhouse_jobs", return_value=FAKE_GREENHOUSE_JOBS):
+        job = job_service.get_job(1)
+
+    assert job["remote_eligibility"] in ("eligible", "not_eligible", "ambiguous")
+    assert job["geo_eligibility"] in ("eligible", "not_eligible", "ambiguous")
+    assert job["remote_eligibility"] == "eligible"  # location is "Remote - LATAM"
+    assert job["geo_eligibility"] == "eligible"
+
+
+def test_get_job_remote_eligibility_is_ambiguous_when_no_modality_signal_present():
+    with patch.object(job_service, "get_greenhouse_jobs", return_value=FAKE_GREENHOUSE_JOBS):
+        job = job_service.get_job(2)  # location "New York", no remote or on-site signal
+
+    assert job["remote_eligibility"] == "ambiguous"
