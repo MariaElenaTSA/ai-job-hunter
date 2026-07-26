@@ -26,3 +26,59 @@ def get_scoring_profile(candidate: dict) -> dict:
     return {
         "target_companies": career_preferences.get("target_companies", []),
     }
+
+
+ROLE_FIELDS = (
+    "title",
+    "start_date",
+    "end_date",
+    "summary",
+    "core_responsibilities",
+    "business_impact",
+    "tools_and_methods",
+)
+
+
+def _filter_experience(experience: list) -> list:
+    filtered = []
+
+    for entry in experience:
+        roles = [
+            {field: role[field] for field in ROLE_FIELDS if field in role}
+            for role in entry.get("roles", [])
+        ]
+        filtered.append({
+            "company": entry.get("company_group"),
+            "roles": roles,
+        })
+
+    return filtered
+
+
+def _public_achievements(achievements: list) -> list:
+    return [
+        {k: v for k, v in achievement.items() if k not in ("claim_strength", "public_notes")}
+        for achievement in achievements
+        if achievement.get("claim_strength", {}).get("publicly_defensible") is True
+    ]
+
+
+def _strip_credential_urls(certifications: list) -> list:
+    return [
+        {k: v for k, v in certification.items() if k != "credential_url"}
+        for certification in certifications
+    ]
+
+
+def build_candidate_context(candidate: dict) -> dict:
+    return {
+        "professional_identity": candidate.get("professional_identity", {}),
+        "career_preferences": candidate.get("career_preferences", {}),
+        "skills": candidate.get("skills", []),
+        "achievements": _public_achievements(candidate.get("achievements", [])),
+        "experience": _filter_experience(candidate.get("experience", [])),
+        "projects": candidate.get("projects", []),
+        "languages": candidate.get("languages", []),
+        "education": candidate.get("education", []),
+        "certifications": _strip_credential_urls(candidate.get("certifications", [])),
+    }

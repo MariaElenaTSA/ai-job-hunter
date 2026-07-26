@@ -14,6 +14,7 @@ def format_job(job, profile):
         "updated_at": job.get("updated_at"),
         "language": job.get("language"),
         "application_deadline": job.get("application_deadline"),
+        "description": job.get("content", ""),
         "description_length": len(job.get("content", "")),
         "has_description": bool(job.get("content")),
         "score": calculate_score(job, profile=profile),
