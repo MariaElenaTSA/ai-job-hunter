@@ -13,9 +13,23 @@ The project is also a learning project. The developer wants to understand every 
 Before implementing any feature:
 
 - Explain your understanding of the task.
-- Identify the files involved.
-- Propose a small implementation plan.
-- Wait for approval if the implementation changes architecture.
+- Identify only the files involved in the current milestone.
+- Present a short implementation plan.
+- Wait for approval if the change affects architecture.
+
+---
+
+## Scope and context efficiency
+
+- Work only with files directly related to the current milestone.
+- Start by reading the files explicitly identified in the task.
+- Read additional files only when necessary to understand a direct dependency or avoid an incorrect change.
+- Do not scan or summarize the entire repository unless explicitly requested.
+- Keep analysis and implementation summaries concise.
+- Do not explore or introduce unrelated refactors or architectural changes.
+- During implementation, run only the tests directly related to the change.
+- After the related tests pass, run the complete test suite once. Do not repeat it unless a failure requires another verification.
+- Do not make live OpenAI calls unless explicitly requested.
 
 ---
 
@@ -28,8 +42,6 @@ Prefer:
 - explicit variable names
 - small functions
 - minimal dependencies
-
-Avoid unnecessary refactors.
 
 ---
 
