@@ -2,9 +2,12 @@ from unittest.mock import patch
 
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 from app import main
 from app.services.ai_service import AIServiceConfigError
+
+client = TestClient(main.app)
 
 FAKE_JOB_NO_DESCRIPTION = {
     "id": 1,
@@ -39,3 +42,25 @@ def test_read_job_summary_ai_config_error_returns_500():
             main.read_job_summary(1)
 
     assert exc_info.value.status_code == 500
+
+
+def test_jobs_endpoint_uses_default_max_age_of_14_days():
+    with patch.object(main, "get_jobs") as mock_get_jobs:
+        mock_get_jobs.return_value = []
+        client.get("/jobs")
+
+    mock_get_jobs.assert_called_once_with(70, 14)
+
+
+def test_jobs_endpoint_max_age_days_zero_means_no_limit():
+    with patch.object(main, "get_jobs") as mock_get_jobs:
+        mock_get_jobs.return_value = []
+        client.get("/jobs?max_age_days=0")
+
+    mock_get_jobs.assert_called_once_with(70, 0)
+
+
+def test_jobs_endpoint_negative_max_age_days_returns_422():
+    response = client.get("/jobs?max_age_days=-1")
+
+    assert response.status_code == 422

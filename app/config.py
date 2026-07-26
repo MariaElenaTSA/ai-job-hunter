@@ -1,3 +1,7 @@
+# --- Job age filter ---
+# Default lookback window for /jobs. Convention: 0 or None means "no age limit".
+DEFAULT_MAX_AGE_DAYS = 14
+
 # --- Content scoring ---
 # Points awarded per distinct matched "concept" found in the job description.
 # A concept is either a synonym group below or a single term derived from the

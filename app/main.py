@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from app.config import DEFAULT_MAX_AGE_DAYS
 from app.services.job_service import get_jobs, get_job
 from app.services.ai_service import (
     AIServiceConfigError,
@@ -27,8 +28,9 @@ def health():
     }
 
 @app.get("/jobs")
-def jobs(min_score: int = 70):
-    return get_jobs(min_score)
+def jobs(min_score: int = 70, max_age_days: int = Query(default=DEFAULT_MAX_AGE_DAYS, ge=0)):
+    # Convention: 0 means "no age limit" (job_service treats 0 and None the same way).
+    return get_jobs(min_score, max_age_days)
 
 @app.get("/jobs/{job_id}")
 def read_job(job_id: int):
