@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from app.services import job_service
+from app.services import job_service, remotive_client
 from app.services.provider_errors import ProviderFetchError, ProviderResponseError
 
 
@@ -42,9 +42,9 @@ def make_normalized_job(
     }
 
 
-def patch_providers(greenhouse=None, remoteok=None):
-    """Patch both providers at once so no test call ever reaches the real
-    Greenhouse or Remote OK APIs, even when a test only cares about one of them."""
+def patch_providers(greenhouse=None, remoteok=None, remotive=None):
+    """Patch all registered providers at once so no test call ever reaches a
+    real provider API, even when a test only cares about one of them."""
 
     def make_getter(jobs_or_error):
         if isinstance(jobs_or_error, Exception):
@@ -59,6 +59,7 @@ def patch_providers(greenhouse=None, remoteok=None):
         {
             "greenhouse": make_getter(greenhouse),
             "remoteok": make_getter(remoteok),
+            "remotive": make_getter(remotive),
         },
     )
 
@@ -69,6 +70,10 @@ def patch_greenhouse(jobs):
 
 def patch_remoteok(jobs):
     return patch_providers(remoteok=jobs)
+
+
+def patch_remotive(jobs):
+    return patch_providers(remotive=jobs)
 
 
 # A profile with no keyword overlap with our test titles/content, so score
@@ -176,6 +181,73 @@ def test_get_jobs_invalid_first_published_is_not_excluded():
     with patch_greenhouse(jobs_with_invalid_date):
         jobs = job_service.get_jobs(min_score=0, max_age_days=14)
 
+    assert len(jobs) == 1
+
+
+# --- first_published without a timezone (e.g. Remotive's "publication_date") ---
+# Regression: comparing a naive datetime against datetime.now(timezone.utc)
+# raised an uncaught TypeError (not a ValueError), surfacing as a 500 on
+# GET /jobs?sources=remotive&max_age_days=14. A naive timestamp must be
+# treated as UTC by convention, the same as a "Z"-suffixed or offset one.
+
+RECENT_NAIVE_ISO = (datetime.now(timezone.utc) - timedelta(days=3)).replace(tzinfo=None).isoformat()
+OLD_NAIVE_ISO = (datetime.now(timezone.utc) - timedelta(days=60)).replace(tzinfo=None).isoformat()
+RECENT_OFFSET_ISO = (
+    (datetime.now(timezone.utc) - timedelta(days=3)).astimezone(timezone(timedelta(hours=-5))).isoformat()
+)
+
+
+def test_get_jobs_naive_recent_first_published_is_not_excluded():
+    jobs_with_naive_date = [{**FAKE_GREENHOUSE_JOBS[0], "first_published": RECENT_NAIVE_ISO}]
+
+    with patch_greenhouse(jobs_with_naive_date):
+        jobs = job_service.get_jobs(min_score=0, max_age_days=14)
+
+    assert len(jobs) == 1
+
+
+def test_get_jobs_naive_old_first_published_is_excluded():
+    jobs_with_naive_date = [{**FAKE_GREENHOUSE_JOBS[0], "first_published": OLD_NAIVE_ISO}]
+
+    with patch_greenhouse(jobs_with_naive_date):
+        jobs = job_service.get_jobs(min_score=0, max_age_days=14)
+
+    assert jobs == []
+
+
+def test_get_jobs_z_suffixed_first_published_still_works():
+    jobs_with_z_date = [{**FAKE_GREENHOUSE_JOBS[0], "first_published": RECENT_ISO}]
+
+    with patch_greenhouse(jobs_with_z_date):
+        jobs = job_service.get_jobs(min_score=0, max_age_days=14)
+
+    assert len(jobs) == 1
+
+
+def test_get_jobs_offset_first_published_is_converted_to_utc_correctly():
+    jobs_with_offset_date = [{**FAKE_GREENHOUSE_JOBS[0], "first_published": RECENT_OFFSET_ISO}]
+
+    with patch_greenhouse(jobs_with_offset_date):
+        jobs = job_service.get_jobs(min_score=0, max_age_days=14)
+
+    assert len(jobs) == 1
+
+
+def test_get_jobs_remotive_style_naive_date_does_not_raise_500():
+    # The exact reported bug: GET /jobs?sources=remotive&max_age_days=14 raised
+    # TypeError before the fix. This job mimics Remotive's raw publication_date
+    # format (naive, no "Z"/offset) -- the assertion is simply that this
+    # doesn't raise, regardless of how the age filter resolves it over time.
+    remotive_job = make_normalized_job(
+        301, source="remotive", workplace_type="remote",
+        title="Backend Engineer IV", location_name="Worldwide",
+        first_published=RECENT_NAIVE_ISO,
+    )
+
+    with patch_providers(remotive=[remotive_job]), patch_fixed_profile():
+        jobs = job_service.get_jobs(min_score=0, max_age_days=14, sources="remotive")
+
+    assert isinstance(jobs, list)
     assert len(jobs) == 1
 
 
@@ -356,6 +428,46 @@ def test_get_jobs_sources_remoteok_only_excludes_greenhouse():
     assert ids == {"101"}
 
 
+FAKE_REMOTIVE_JOBS = [
+    make_normalized_job(
+        201, source="remotive", workplace_type="remote",
+        title="Backend Engineer IV", location_name="Worldwide", company_name="RemotiveCo",
+    ),
+]
+
+
+def test_get_jobs_with_no_sources_includes_all_three_providers():
+    with patch_providers(
+        greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS, remotive=FAKE_REMOTIVE_JOBS
+    ), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0)
+
+    ids = {job["source_job_id"] for job in result}
+    assert {"1", "101", "201"} <= ids
+
+
+def test_get_jobs_sources_remotive_only_excludes_the_others():
+    with patch_providers(
+        greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS, remotive=FAKE_REMOTIVE_JOBS
+    ), patch_fixed_profile():
+        result = job_service.get_jobs(min_score=0, max_age_days=0, sources="remotive")
+
+    ids = {job["source_job_id"] for job in result}
+    assert ids == {"201"}
+
+
+def test_get_jobs_sources_all_three_combined_explicitly():
+    with patch_providers(
+        greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS, remotive=FAKE_REMOTIVE_JOBS
+    ), patch_fixed_profile():
+        result = job_service.get_jobs(
+            min_score=0, max_age_days=0, sources="greenhouse,remoteok,remotive"
+        )
+
+    ids = {job["source_job_id"] for job in result}
+    assert {"1", "101", "201"} <= ids
+
+
 def test_get_jobs_sources_combined_with_whitespace_and_duplicates():
     with patch_providers(greenhouse=FAKE_GREENHOUSE_JOBS, remoteok=FAKE_REMOTEOK_JOBS), patch_fixed_profile():
         result = job_service.get_jobs(min_score=0, max_age_days=0, sources=" Greenhouse ,remoteok, greenhouse")
@@ -400,13 +512,14 @@ def test_get_jobs_total_failure_raises_all_providers_failed_error():
     with patch_providers(
         greenhouse=ProviderFetchError("greenhouse down"),
         remoteok=ProviderResponseError("remoteok bad payload"),
+        remotive=ProviderFetchError("remotive down"),
     ):
         with pytest.raises(job_service.AllProvidersFailedError):
             job_service.get_jobs(min_score=0, max_age_days=0)
 
 
 def test_get_jobs_all_providers_succeed_with_no_jobs_returns_empty_list():
-    with patch_providers(greenhouse=[], remoteok=[]):
+    with patch_providers(greenhouse=[], remoteok=[], remotive=[]):
         result = job_service.get_jobs(min_score=0, max_age_days=0)
 
     assert result == []
@@ -457,7 +570,52 @@ def test_get_job_remoteok_id_only_queries_remoteok_provider():
 
     assert job is not None
     assert job["source"] == "remoteok"
+
+
+def test_get_job_remotive_id_only_queries_remotive_provider():
+    greenhouse_mock = Mock(return_value=[])
+    remoteok_mock = Mock(return_value=[])
+
+    with patch.dict(job_service.PROVIDERS, {
+        "greenhouse": greenhouse_mock,
+        "remoteok": remoteok_mock,
+        "remotive": lambda: FAKE_REMOTIVE_JOBS,
+    }):
+        job = job_service.get_job("remotive:201")
+
+    assert job is not None
+    assert job["source"] == "remotive"
     greenhouse_mock.assert_not_called()
+    remoteok_mock.assert_not_called()
+
+
+# --- Remotive cache: shared across /jobs and /jobs/{job_id} ---
+
+def test_get_jobs_and_get_job_share_the_remotive_cache():
+    remotive_client._reset_cache()
+
+    fake_raw_job = {
+        "id": 555,
+        "title": "Remote Backend Engineer",
+        "company_name": "RemotiveCo",
+        "url": "https://remotive.com/remote-jobs/555",
+        "candidate_required_location": "Worldwide",
+        "description": "",
+        "publication_date": RECENT_ISO,
+    }
+    fake_response = Mock()
+    fake_response.json.return_value = {"jobs": [fake_raw_job]}
+
+    try:
+        with patch.object(remotive_client.requests, "get", return_value=fake_response) as mock_get:
+            job_service.get_jobs(min_score=0, max_age_days=0, sources="remotive")
+            job = job_service.get_job("remotive:555")
+    finally:
+        remotive_client._reset_cache()
+
+    assert mock_get.call_count == 1  # both calls above were served by the same cached Remotive fetch
+    assert job is not None
+    assert job["source"] == "remotive"
 
 
 def test_get_job_raises_provider_error_when_its_provider_is_down():

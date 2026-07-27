@@ -63,9 +63,14 @@ GEO_AMBIGUOUS_SCOPE_WORDS = ["americas"]
 # the structured location field. In free-text descriptions we require an
 # explicit hiring/eligibility statement to avoid false positives from generic
 # marketing language such as "we are a global company".
+#
+# NOTE: "work from anywhere" is deliberately NOT included here (it is a
+# remote-culture/perk phrase, not a hiring-scope commitment -- it is common
+# even in postings restricted to a single country) even though it IS a valid
+# signal in REMOTE_DESCRIPTION_PHRASES below, which answers a different
+# question (remote vs. onsite modality, not geographic hiring eligibility).
 GEO_ELIGIBLE_DESCRIPTION_PHRASES = [
     "remote worldwide",
-    "work from anywhere",
     "candidates located in latin america",
     "candidates based in latin america",
     "open to applicants in peru",

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from app.config import DEFAULT_MAX_AGE_DAYS, MAX_RESULTS
-from app.services import greenhouse_client, remoteok_client
+from app.services import greenhouse_client, remoteok_client, remotive_client
 from app.services.candidate_service import get_scoring_profile, load_candidate_profile
 from app.services.provider_errors import ProviderError
 from app.services.scoring_service import (
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 PROVIDERS = {
     "greenhouse": greenhouse_client.get_normalized_jobs,
     "remoteok": remoteok_client.get_normalized_jobs,
+    "remotive": remotive_client.get_normalized_jobs,
 }
 
 
@@ -92,20 +93,39 @@ def format_job(job, profile):
         "geo_eligibility": calculate_geo_eligibility(job, profile=profile),
     }
 
+def _parse_first_published(first_published: str | None) -> datetime | None:
+    """Parse `first_published` into an aware UTC datetime, or None if missing/invalid.
+
+    Providers vary in whether they include a timezone offset: Remotive, for
+    example, sends bare ISO strings with no offset at all (e.g.
+    "2026-07-24T10:33:35"), unlike Greenhouse/Remote OK's "...Z" timestamps.
+    By convention, a naive timestamp is treated as UTC -- this project has no
+    per-provider timezone metadata, and UTC is the least-surprising default
+    for "unspecified". Timestamps that already carry "Z" or an explicit
+    offset keep it and compare correctly against UTC as-is.
+    """
+    if not first_published:
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(first_published.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+
+    return parsed
+
 def _is_within_max_age(job: dict, max_age_days: int | None) -> bool:
     """0 or None means no age limit. A missing or unparseable first_published
     never excludes a job -- absence of data is not evidence of an old posting."""
     if not max_age_days:
         return True
 
-    first_published = job.get("first_published")
+    published_at = _parse_first_published(job.get("first_published"))
 
-    if not first_published:
-        return True
-
-    try:
-        published_at = datetime.fromisoformat(first_published.replace("Z", "+00:00"))
-    except ValueError:
+    if published_at is None:
         return True
 
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
@@ -113,15 +133,12 @@ def _is_within_max_age(job: dict, max_age_days: int | None) -> bool:
 
 def _first_published_epoch(job: dict) -> float:
     """Missing or unparseable dates rank as oldest, never breaking the sort."""
-    first_published = job.get("first_published")
+    published_at = _parse_first_published(job.get("first_published"))
 
-    if not first_published:
+    if published_at is None:
         return float("-inf")
 
-    try:
-        return datetime.fromisoformat(first_published.replace("Z", "+00:00")).timestamp()
-    except ValueError:
-        return float("-inf")
+    return published_at.timestamp()
 
 def _ranking_key(job: dict):
     eligibility_confirmed = (

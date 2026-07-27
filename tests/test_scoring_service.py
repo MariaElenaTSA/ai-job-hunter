@@ -404,3 +404,57 @@ def test_geo_eligibility_ignores_state_names_when_country_is_not_reconizable():
     job = make_job(location="Springfield, Illinois")
 
     assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "ambiguous"
+
+
+def test_geo_eligibility_not_eligible_for_uruguay_with_peru_based_in():
+    job = make_job(location="Uruguay")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_not_eligible_for_mexico_with_peru_based_in():
+    job = make_job(location="Mexico")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+# --- calculate_geo_eligibility: structured location outranks description phrases ---
+
+def test_geo_eligibility_not_eligible_when_brazil_location_has_generic_work_from_anywhere_description():
+    # Regression: "work from anywhere" is a remote-culture perk phrase, not a
+    # hiring-scope commitment -- it must not override a country named
+    # explicitly in the structured location field.
+    job = make_job(location="Brazil", content="Work from anywhere and enjoy true flexibility.")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_not_eligible_when_brazil_location_conflicts_with_latin_america_description_phrase():
+    # Regression: even a genuinely explicit description phrase ("candidates
+    # based in Latin America") must not override a specific, non-accepted
+    # country named directly in the structured location field.
+    job = make_job(location="Brazil", content="Candidates based in Latin America are welcome to apply.")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "not_eligible"
+
+
+def test_geo_eligibility_eligible_when_location_is_bare_remote_and_description_confirms_latin_america():
+    # When location alone doesn't resolve geographic scope, an explicit
+    # description phrase is allowed to decide.
+    job = make_job(location="Remote", content="Candidates based in Latin America are welcome to apply.")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "eligible"
+
+
+def test_geo_eligibility_ambiguous_when_location_is_bare_remote_and_description_only_says_work_from_anywhere():
+    job = make_job(location="Remote", content="Work from anywhere and enjoy true flexibility.")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "ambiguous"
+
+
+def test_remote_eligibility_eligible_when_description_says_work_from_anywhere():
+    # "work from anywhere" remains a valid remote/onsite modality signal --
+    # only its use as a *geographic* eligibility signal was removed.
+    job = make_job(location="Remote", content="Work from anywhere and enjoy true flexibility.")
+
+    assert calculate_remote_eligibility(job) == "eligible"

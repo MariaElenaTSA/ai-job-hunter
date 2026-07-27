@@ -276,19 +276,14 @@ def calculate_geo_eligibility(job: dict, profile: dict = None) -> str:
     location_has_acceptable_scope = any(
         _tokens_contain(location_tokens, _tokenize(scope)) for scope in acceptable_scopes
     )
-    description_has_eligible_phrase = any(phrase in description for phrase in GEO_ELIGIBLE_DESCRIPTION_PHRASES)
     location_has_us_only_phrase = any(phrase in location for phrase in GEO_US_ONLY_PHRASES)
-    description_has_us_only_phrase = any(phrase in description for phrase in GEO_US_ONLY_PHRASES)
-    mentions_ambiguous_scope = any(
-        word in location or word in description for word in GEO_AMBIGUOUS_SCOPE_WORDS
-    )
-
     detected_countries = _detect_countries(location_tokens)
     based_in_is_named = based_in_country is not None and based_in_country in detected_countries
 
     # 1. An explicit hiring scope (Worldwide, Global, LATAM, Latin America,
-    #    South America, Peru...) is the strongest, most direct signal.
-    if location_has_acceptable_scope or description_has_eligible_phrase:
+    #    South America, Peru...) named directly in the structured location
+    #    field is the strongest, most direct signal.
+    if location_has_acceptable_scope:
         return "eligible"
 
     # 2 & 7. The candidate's own country is explicitly named in the location --
@@ -296,17 +291,34 @@ def calculate_geo_eligibility(job: dict, profile: dict = None) -> str:
     if based_in_is_named:
         return "eligible"
 
-    # 3. One or more *other* countries are named, and none of them is the
-    #    candidate's -- a location naming a specific country restricts hiring
-    #    to that country, regardless of which broader region it belongs to
-    #    (e.g. Brazil being part of Latin America doesn't make a Brazil-only
-    #    posting open to candidates from all of LATAM).
-    if detected_countries or location_has_us_only_phrase or description_has_us_only_phrase:
+    # 3. The location names one or more *other* countries (or an explicit "US
+    #    only" style phrase), and none of them is the candidate's. A specific
+    #    country named in the structured location field outranks any free-text
+    #    description phrase checked below: a generic remote-culture blurb
+    #    (e.g. "work from anywhere") is not a real hiring-scope commitment and
+    #    must never override an explicit, structured restriction -- and
+    #    Brazil being part of Latin America doesn't make a Brazil-only
+    #    posting open to candidates from all of LATAM.
+    if detected_countries or location_has_us_only_phrase:
         return "not_eligible"
 
-    # 4. "Americas" or similarly imprecise scope words, with nothing more specific.
+    # 4. Only when the location itself doesn't resolve geographic scope (e.g.
+    #    a bare "Remote") do explicit description phrases get a say.
+    description_has_eligible_phrase = any(phrase in description for phrase in GEO_ELIGIBLE_DESCRIPTION_PHRASES)
+    description_has_us_only_phrase = any(phrase in description for phrase in GEO_US_ONLY_PHRASES)
+
+    if description_has_eligible_phrase:
+        return "eligible"
+
+    if description_has_us_only_phrase:
+        return "not_eligible"
+
+    # 5. "Americas" or similarly imprecise scope words, with nothing more specific.
+    mentions_ambiguous_scope = any(
+        word in location or word in description for word in GEO_AMBIGUOUS_SCOPE_WORDS
+    )
     if mentions_ambiguous_scope:
         return "ambiguous"
 
-    # 5 & 6. Bare "remote" with no country/scope, or not enough information at all.
+    # 6. Bare "remote" with no country/scope, or not enough information at all.
     return "ambiguous"
