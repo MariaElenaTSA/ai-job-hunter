@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from app.config import DEFAULT_MAX_AGE_DAYS, MAX_RESULTS
-from app.services import greenhouse_client, remoteok_client, remotive_client
+from app.services import greenhouse_client, manual_import_service, remoteok_client, remotive_client
 from app.services.candidate_service import get_scoring_profile, load_candidate_profile
 from app.services.provider_errors import ProviderError
 from app.services.scoring_service import (
@@ -182,6 +182,14 @@ def get_jobs(
 def get_job(job_id: str):
     profile = get_scoring_profile(load_candidate_profile())
     source, source_job_id = _parse_job_id(job_id)
+
+    # Manually-imported jobs live in their own in-memory store, not in
+    # PROVIDERS -- they are never part of the automatic /jobs aggregation,
+    # only reachable directly by their id.
+    if source == "manual_import":
+        job = manual_import_service.get_stored_job(source_job_id)
+        return format_job(job, profile) if job is not None else None
+
     get_provider_jobs = PROVIDERS.get(source)
 
     if get_provider_jobs is None:

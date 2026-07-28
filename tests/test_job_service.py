@@ -4,7 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from app.services import job_service, remotive_client
+from app.services import job_service, manual_import_service, remotive_client
+from app.services.manual_import_service import ManualJobImport
 from app.services.provider_errors import ProviderFetchError, ProviderResponseError
 
 
@@ -622,3 +623,57 @@ def test_get_job_raises_provider_error_when_its_provider_is_down():
     with patch_providers(remoteok=ProviderFetchError("remoteok down")):
         with pytest.raises(ProviderFetchError):
             job_service.get_job("remoteok:1")
+
+
+# --- get_job: manual imports ---
+
+def test_get_job_resolves_a_manually_imported_job():
+    manual_import_service._reset_imports()
+    payload = ManualJobImport(
+        url="https://www.linkedin.com/jobs/view/999",
+        title="Technical Account Manager",
+        company_name="Example Company",
+        location="Remote - LATAM",
+        description="Full job description.",
+    )
+    job = manual_import_service.build_normalized_job(payload)
+
+    try:
+        result = job_service.get_job(job["id"])
+    finally:
+        manual_import_service._reset_imports()
+
+    assert result is not None
+    assert result["source"] == "manual_import"
+    assert result["title"] == "Technical Account Manager"
+    assert "score" in result
+    assert "remote_eligibility" in result
+    assert "geo_eligibility" in result
+
+
+def test_get_job_unknown_manual_import_id_returns_none():
+    manual_import_service._reset_imports()
+
+    result = job_service.get_job("manual_import:does-not-exist")
+
+    assert result is None
+
+
+def test_get_jobs_never_includes_manual_imports():
+    # manual_import is intentionally not registered in PROVIDERS -- it must
+    # never appear in the automatic /jobs aggregation.
+    manual_import_service._reset_imports()
+    payload = ManualJobImport(
+        url="https://www.linkedin.com/jobs/view/888",
+        title="Technical Account Manager",
+        description="Full job description.",
+    )
+    manual_import_service.build_normalized_job(payload)
+
+    try:
+        with patch_greenhouse(FAKE_GREENHOUSE_JOBS):
+            result = job_service.get_jobs(min_score=0, max_age_days=0)
+    finally:
+        manual_import_service._reset_imports()
+
+    assert all(job["source"] != "manual_import" for job in result)

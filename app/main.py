@@ -1,7 +1,14 @@
 from fastapi import FastAPI, HTTPException, Query
 from app.config import DEFAULT_MAX_AGE_DAYS
 from app.profile import MIN_SCORE
-from app.services.job_service import AllProvidersFailedError, UnknownSourceError, get_jobs, get_job
+from app.services import manual_import_service
+from app.services.job_service import (
+    AllProvidersFailedError,
+    UnknownSourceError,
+    format_job,
+    get_jobs,
+    get_job,
+)
 from app.services.provider_errors import ProviderError
 from app.services.ai_service import (
     AIServiceConfigError,
@@ -10,7 +17,7 @@ from app.services.ai_service import (
     AIServiceUnavailableError,
     summarize_job,
 )
-from app.services.candidate_service import build_candidate_context, load_candidate_profile
+from app.services.candidate_service import build_candidate_context, get_scoring_profile, load_candidate_profile
 
 app = FastAPI(
     title="AI Job Hunter",
@@ -42,6 +49,15 @@ def jobs(
         raise HTTPException(status_code=400, detail=str(error))
     except AllProvidersFailedError as error:
         raise HTTPException(status_code=502, detail=str(error))
+
+@app.post("/jobs/import")
+def import_job(payload: manual_import_service.ManualJobImport):
+    # Registered before the dynamic "/jobs/{job_id}" GET route as a defensive
+    # convention. Methods differ (POST vs. GET) so there is no real routing
+    # collision, but static routes are kept ahead of dynamic ones on principle.
+    job = manual_import_service.build_normalized_job(payload)
+    profile = get_scoring_profile(load_candidate_profile())
+    return format_job(job, profile)
 
 @app.get("/jobs/{job_id}")
 def read_job(job_id: str):

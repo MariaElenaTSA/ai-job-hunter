@@ -5,11 +5,28 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app import main
+from app.services import manual_import_service
 from app.services.ai_service import AIServiceConfigError
 from app.services.job_service import AllProvidersFailedError, UnknownSourceError
 from app.services.provider_errors import ProviderFetchError
 
 client = TestClient(main.app)
+
+
+@pytest.fixture(autouse=True)
+def _reset_manual_imports():
+    manual_import_service._reset_imports()
+    yield
+    manual_import_service._reset_imports()
+
+
+VALID_IMPORT_PAYLOAD = {
+    "url": "https://www.linkedin.com/jobs/view/1234567890",
+    "title": "Technical Account Manager",
+    "company_name": "Example Company",
+    "location": "Remote - LATAM",
+    "description": "Full job description with real content.",
+}
 
 FAKE_JOB_NO_DESCRIPTION = {
     "id": "greenhouse:1",
@@ -151,3 +168,125 @@ def test_jobs_endpoint_all_providers_failed_returns_502():
         response = client.get("/jobs")
 
     assert response.status_code == 502
+
+
+# --- POST /jobs/import ---
+
+def test_import_job_endpoint_happy_path_returns_formatted_job():
+    response = client.post("/jobs/import", json=VALID_IMPORT_PAYLOAD)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"].startswith("manual_import:")
+    assert body["source"] == "manual_import"
+    assert body["title"] == "Technical Account Manager"
+    assert body["company_name"] == "Example Company"
+    assert body["location"] == "Remote - LATAM"
+    assert body["source_url"] == VALID_IMPORT_PAYLOAD["url"]
+    assert body["application_url"] == VALID_IMPORT_PAYLOAD["url"]
+    assert body["attribution"] == "Manual import"
+    assert "score" in body
+    assert "remote_eligibility" in body
+    assert "geo_eligibility" in body
+    assert body["has_description"] is True
+
+
+def test_import_job_endpoint_rejects_disallowed_url_scheme():
+    payload = {**VALID_IMPORT_PAYLOAD, "url": "javascript:alert(1)"}
+
+    response = client.post("/jobs/import", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_import_job_endpoint_rejects_missing_title():
+    payload = {k: v for k, v in VALID_IMPORT_PAYLOAD.items() if k != "title"}
+
+    response = client.post("/jobs/import", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_import_job_endpoint_rejects_whitespace_only_title():
+    payload = {**VALID_IMPORT_PAYLOAD, "title": "   "}
+
+    response = client.post("/jobs/import", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_import_job_endpoint_rejects_whitespace_only_description():
+    payload = {**VALID_IMPORT_PAYLOAD, "description": "   "}
+
+    response = client.post("/jobs/import", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_import_job_endpoint_rejects_description_over_max_length():
+    payload = {**VALID_IMPORT_PAYLOAD, "description": "x" * (manual_import_service.MAX_DESCRIPTION_LENGTH + 1)}
+
+    response = client.post("/jobs/import", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_import_job_endpoint_missing_company_name_and_location_still_succeeds():
+    payload = {
+        "url": "https://www.linkedin.com/jobs/view/555",
+        "title": "Technical Account Manager",
+        "description": "Full job description.",
+    }
+
+    response = client.post("/jobs/import", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["company_name"] is None
+    assert body["location"] == ""
+
+
+def test_import_job_endpoint_invalid_payload_returns_422():
+    response = client.post("/jobs/import", json={"not": "a valid payload"})
+
+    assert response.status_code == 422
+
+
+def test_import_job_endpoint_is_not_intercepted_by_the_dynamic_job_id_route():
+    # Explicit routing check: POST /jobs/import must reach the import handler,
+    # not 404/405 as if "import" had been parsed as a job_id path segment.
+    response = client.post("/jobs/import", json=VALID_IMPORT_PAYLOAD)
+
+    assert response.status_code == 200
+    assert response.json()["source"] == "manual_import"
+
+
+def test_import_job_endpoint_result_can_be_retrieved_via_get_jobs_by_id():
+    import_response = client.post("/jobs/import", json=VALID_IMPORT_PAYLOAD)
+    job_id = import_response.json()["id"]
+
+    get_response = client.get(f"/jobs/{job_id}")
+
+    assert get_response.status_code == 200
+    assert get_response.json()["id"] == job_id
+
+
+def test_import_job_endpoint_result_summary_reaches_mocked_ai_service():
+    import_response = client.post("/jobs/import", json=VALID_IMPORT_PAYLOAD)
+    job_id = import_response.json()["id"]
+
+    fake_summary = {
+        "job_id": job_id,
+        "title": "Technical Account Manager",
+        "summary": "Great fit.",
+        "required_skills": [],
+        "why_it_matches": [],
+        "potential_gaps": [],
+    }
+
+    with patch.object(main, "summarize_job", return_value=fake_summary) as mock_summarize:
+        summary_response = client.get(f"/jobs/{job_id}/summary")
+
+    assert summary_response.status_code == 200
+    assert summary_response.json() == fake_summary
+    mock_summarize.assert_called_once()
