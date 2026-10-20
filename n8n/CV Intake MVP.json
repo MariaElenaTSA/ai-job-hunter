@@ -1,0 +1,428 @@
+{
+  "name": "CV Intake MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Career Profile Interviewer (Beta)",
+        "formDescription": "Bienvenid@\n\nGracias por probar esta primera versión de Career Profile Interviewer.\n\nEsta herramienta utilizará tu CV únicamente como punto de partida para construir un perfil profesional mucho más completo mediante una conversación guiada.\n\nDurante la entrevista profundizaremos en tu experiencia para descubrir responsabilidades, habilidades y logros que normalmente no aparecen en un currículum.\n\nDuración aproximada: 20–30 minutos.\n\nTu información será utilizada únicamente para esta prueba y para mejorar la experiencia del producto.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre completo",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Correo electrónico",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Adjunta tu CV en PDF",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf,application/pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Comenzar entrevista"
+        }
+      },
+      "id": "9075b780-7f14-438e-b637-dfeed4a32807",
+      "name": "CV Upload Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -480,
+        80
+      ],
+      "webhookId": "493499bd-28f6-484d-a3ef-452211be5774"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "95ae4108-6767-48ed-b217-1316b9298bb4",
+              "leftValue": "={{ $binary.Adjunta_tu_CV_en_PDF.mimeType }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6d110b1d-a02e-4002-874b-c1ec0a2cf49d",
+      "name": "Is PDF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "Adjunta_tu_CV_en_PDF",
+        "options": {}
+      },
+      "id": "9b602250-ad19-4350-97d7-e9875eae91a9",
+      "name": "Extract CV Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrae un perfil profesional estructurado únicamente a partir del siguiente CV.\n\nTEXTO DEL CV:\n{{ $json.text ?? $json.data ?? JSON.stringify($json) }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "d2d0ec0f-7dd9-41a4-a4df-89359592daf1",
+      "name": "Structure CV Profile",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": null
+        }
+      },
+      "id": "30037571-8a55-4477-9b3c-04a0bc3b6b05",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        240
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "lb1PL2BMjEvc3GVH",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\n    \"professional_identity\",\n    \"experience\",\n    \"accounting_areas\",\n    \"tools\",\n    \"skills\",\n    \"education\",\n    \"certifications\",\n    \"languages\",\n    \"information_to_confirm\"\n  ],\n  \"properties\": {\n    \"professional_identity\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"required\": [\n        \"most_recent_role\",\n        \"years_of_experience\",\n        \"professional_summary\"\n      ],\n      \"properties\": {\n        \"most_recent_role\": {\n          \"type\": \"string\"\n        },\n        \"years_of_experience\": {\n          \"type\": \"string\"\n        },\n        \"professional_summary\": {\n          \"type\": \"string\"\n        }\n      }\n    },\n    \"experience\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\n          \"job_title\",\n          \"company\",\n          \"start_date\",\n          \"end_date\",\n          \"responsibilities\",\n          \"explicit_achievements\"\n        ],\n        \"properties\": {\n          \"job_title\": {\n            \"type\": \"string\"\n          },\n          \"company\": {\n            \"type\": \"string\"\n          },\n          \"start_date\": {\n            \"type\": \"string\"\n          },\n          \"end_date\": {\n            \"type\": \"string\"\n          },\n          \"responsibilities\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"explicit_achievements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    },\n    \"accounting_areas\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"tools\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"skills\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"education\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\n          \"degree\",\n          \"institution\",\n          \"year\"\n        ],\n        \"properties\": {\n          \"degree\": {\n            \"type\": \"string\"\n          },\n          \"institution\": {\n            \"type\": \"string\"\n          },\n          \"year\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"certifications\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"languages\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"information_to_confirm\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}"
+      },
+      "id": "d3dd147e-b43e-4c97-8748-75e1f4c97012",
+      "name": "CV Profile Schema",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const form = $('CV Upload Form').first();\nconst raw = $json.output ?? $json;\n\nlet profile = raw;\nif (typeof raw === 'string') {\n  try { profile = JSON.parse(raw); }\n  catch (error) { throw new Error(`El perfil extraído no es JSON válido: ${error.message}`); }\n}\n\nconst formJson = form.json ?? {};\nconst file =\n    form.binary?.Adjunta_tu_CV_en_PDF ??\n    form.binary?.cv_file ??\n    {};\n\nreturn [{ json: {\n  candidate_id: `accounting-${Date.now()}`,\n  uploaded_at: new Date().toISOString(),\n  full_name: formJson.full_name ?? formJson['Nombre completo'] ?? '',\n  email: formJson.email ?? formJson['Correo electrónico'] ?? '',\n  cv_filename: file.fileName ?? '',\n  cv_profile_json: JSON.stringify(profile),\n  status: 'ready_for_interview',\n  interview_url: 'https://mariaelena1988.app.n8n.cloud/webhook/accounting-career-profile-chat/chat'\n}}];"
+      },
+      "id": "0430354b-ed79-4ee1-a5bc-1b8b5f145ec4",
+      "name": "Prepare Candidate Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1ZsEVp5QX9NAHIquES6jDD5ccqYGKCJd0LtKcUm_kIAM/edit?gid=1046157144#gid=1046157144",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1046157144,
+          "mode": "list",
+          "cachedResultName": "candidate_context",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZsEVp5QX9NAHIquES6jDD5ccqYGKCJd0LtKcUm_kIAM/edit#gid=1046157144"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "candidate_id": "={{ $json.candidate_id }}",
+            "uploaded_at": "={{ $json.uploaded_at }}",
+            "full_name": "={{ $json.full_name }}",
+            "email": "={{ $json.email }}",
+            "cv_filename": "={{ $json.cv_filename }}",
+            "cv_profile_json": "={{ $json.cv_profile_json }}",
+            "status": "={{ $json.status }}",
+            "interview_url": "={{ $json.interview_url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "candidate_id",
+              "displayName": "candidate_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uploaded_at",
+              "displayName": "uploaded_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cv_filename",
+              "displayName": "cv_filename",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cv_profile_json",
+              "displayName": "cv_profile_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "interview_url",
+              "displayName": "interview_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d2c84f63-3b45-40f6-9731-6261a7b9edf3",
+      "name": "Save Candidate Context",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        720,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HfQsQ0bdGsEl8yIq",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "redirect",
+        "redirectUrl": "https://mariaelena1988.app.n8n.cloud/webhook/accounting-career-profile-chat/chat",
+        "options": {}
+      },
+      "id": "976e385a-2669-4002-8bfc-81e75db6b2a1",
+      "name": "Show Interview Link",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        960,
+        0
+      ],
+      "webhookId": "ddb23b16-268d-4671-ac4b-e46183e1a6ca"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Archivo no válido",
+        "completionMessage": "El archivo no pudo procesarse correctamente.\n\nVerifica que el documento esté en formato PDF y que el texto pueda seleccionarse con el cursor.\n\nSi el problema continúa, puedes iniciar la entrevista sin cargar un CV.",
+        "options": {}
+      },
+      "id": "d558341c-fed0-477f-8b47-d80b75cc4480",
+      "name": "Show PDF Error",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        0,
+        208
+      ],
+      "webhookId": "5df91349-ad2c-435f-8006-c9247a027091"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "CV Upload Form": {
+      "main": [
+        [
+          {
+            "node": "Is PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is PDF": {
+      "main": [
+        [
+          {
+            "node": "Extract CV Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Show PDF Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract CV Text": {
+      "main": [
+        [
+          {
+            "node": "Structure CV Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structure CV Profile",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV Profile Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Structure CV Profile",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure CV Profile": {
+      "main": [
+        [
+          {
+            "node": "Prepare Candidate Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Candidate Context": {
+      "main": [
+        [
+          {
+            "node": "Save Candidate Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Candidate Context": {
+      "main": [
+        [
+          {
+            "node": "Show Interview Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1cf7d409-6431-4748-8db1-c8409a43ea60",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "62c45fbfb60bfe20df2a1a05d04981429339ba5885b22dd72897a67dc8e7b0dd"
+  },
+  "nodeGroups": [],
+  "id": "JLfbDlcZlen41l7P",
+  "tags": []
+}

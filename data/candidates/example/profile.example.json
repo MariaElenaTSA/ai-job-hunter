@@ -1,0 +1,53 @@
+{
+  "identity": {
+    "full_name": "Alex Example",
+    "email": "alex@example.invalid"
+  },
+  "professional_identity": {
+    "mission": "Help teams understand and resolve technical problems.",
+    "approach": "Investigate evidence and communicate clearly.",
+    "core_value": "Reduce uncertainty through structured analysis.",
+    "target_teams": ["Customer Engineering"],
+    "professional_superpowers": ["Technical investigation"],
+    "decision_principles": ["Use evidence before assumptions"]
+  },
+  "career_preferences": {
+    "target_roles": ["Solutions Engineer", "Technical Support Engineer"],
+    "preferred_responsibilities": ["Investigating technical issues"],
+    "remote_only": true,
+    "geo_eligibility": {
+      "based_in": "Exampleland",
+      "acceptable_scopes": ["Worldwide"]
+    }
+  },
+  "experience": [
+    {
+      "company_group": "Example Organization",
+      "roles": [
+        {
+          "title": "Technical Support Analyst",
+          "start_date": "2022-01",
+          "end_date": "2025-01",
+          "summary": "Investigated sample technical issues.",
+          "core_responsibilities": ["Documented reproducible findings"],
+          "business_impact": ["Improved issue handoffs"],
+          "tools_and_methods": ["SQL", "REST APIs"]
+        }
+      ]
+    }
+  ],
+  "projects": [],
+  "skills": [{"name": "Root Cause Analysis"}],
+  "tools": [{"name": "SQL"}],
+  "achievements": [
+    {
+      "title": "Improved a sample troubleshooting workflow",
+      "claim_strength": {"publicly_defensible": true}
+    }
+  ],
+  "professional_stories": [],
+  "interview_examples": [],
+  "languages": [{"language": "English", "proficiency": "Professional"}],
+  "education": [{"institution": "Example Institute", "degree": "Sample qualification"}],
+  "certifications": [{"name": "Example certification"}]
+}

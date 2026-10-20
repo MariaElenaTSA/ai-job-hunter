@@ -128,6 +128,16 @@ def _store_job(job: dict) -> None:
         _imports[job["source_job_id"]] = job
 
 
+def store_jobs_batch(jobs: list[dict]) -> None:
+    """Write an entire batch under a single lock acquisition, so a batch
+    import is atomic with respect to concurrent readers/writers -- no other
+    request can observe half of a batch stored. Callers are responsible for
+    validating/normalizing every job *before* calling this."""
+    with _imports_lock:
+        for job in jobs:
+            _imports[job["source_job_id"]] = job
+
+
 def get_stored_job(source_job_id: str) -> dict | None:
     # Lock is held only long enough to read the reference out of the dict.
     with _imports_lock:

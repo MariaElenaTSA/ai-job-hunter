@@ -27,3 +27,9 @@ This project aims to help job seekers discover the best opportunities, evaluate 
 ## Project Status
 
 🚧 MVP in progress
+
+## Candidate profile setup
+
+The app loads a local profile from `data/candidates/local/profile.json`. This path is ignored by Git so personal profiles and application documents stay on your machine. If the local file is absent (for example, in a fresh clone), the app uses the fictitious schema example at `data/candidates/example/profile.example.json`.
+
+To use your own profile after cloning, create `data/candidates/local/profile.json` using the example file as the schema reference. Keep real CVs and job-specific application documents under `data/candidates/local/applications/`; these files are ignored as well. Do not add personal profile or application files to Git.

@@ -151,6 +151,14 @@ def _ranking_key(job: dict):
         -job["description_length"],          # most complete description first
     )
 
+def sort_jobs_for_recommendation(jobs: list[dict]) -> list[dict]:
+    """Order already-formatted jobs by score, eligibility confidence, recency,
+    and description completeness. Public wrapper around the ranking rule so
+    other modules (e.g. batch import) don't depend on the private
+    `_ranking_key`. Does not filter anything out -- callers decide that."""
+    return sorted(jobs, key=_ranking_key)
+
+
 def _parse_job_id(job_id: str) -> tuple[str, str]:
     if ":" in job_id:
         source, source_job_id = job_id.split(":", 1)
@@ -176,7 +184,7 @@ def get_jobs(
     jobs = [job for job in jobs if job["remote_eligibility"] != "not_eligible"]
     jobs = [job for job in jobs if job["geo_eligibility"] != "not_eligible"]
 
-    jobs.sort(key=_ranking_key)
+    jobs = sort_jobs_for_recommendation(jobs)
     return jobs[:MAX_RESULTS]
 
 def get_job(job_id: str):

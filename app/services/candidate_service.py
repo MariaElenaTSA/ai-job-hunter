@@ -2,14 +2,23 @@ import json
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CANDIDATE_PROFILE_PATH = PROJECT_ROOT / "data" / "candidates" / "maria_elena_paredes" / "profile.json"
+LOCAL_CANDIDATE_PROFILE_PATH = PROJECT_ROOT / "data" / "candidates" / "local" / "profile.json"
+EXAMPLE_CANDIDATE_PROFILE_PATH = PROJECT_ROOT / "data" / "candidates" / "example" / "profile.example.json"
+# Keep the established constant as the default, now pointing to the local,
+# ignored profile. Clones without one use the committed fictitious example.
+CANDIDATE_PROFILE_PATH = LOCAL_CANDIDATE_PROFILE_PATH
 
 
 class CandidateProfileError(Exception):
     """Raised when the candidate profile file is missing or invalid."""
 
 
-def load_candidate_profile(path: Path = CANDIDATE_PROFILE_PATH) -> dict:
+def load_candidate_profile(path: Path | None = None) -> dict:
+    if path is None:
+        path = LOCAL_CANDIDATE_PROFILE_PATH
+        if not path.exists():
+            path = EXAMPLE_CANDIDATE_PROFILE_PATH
+
     if not path.exists():
         raise CandidateProfileError(f"Candidate profile not found at {path}")
 

@@ -19,6 +19,34 @@ def test_load_candidate_profile_returns_dict_with_expected_keys():
     assert "geo_eligibility" in candidate["career_preferences"]
 
 
+def test_load_candidate_profile_uses_fictitious_example_when_local_profile_is_missing(tmp_path, monkeypatch):
+    from app.services import candidate_service
+
+    local_profile = tmp_path / "local" / "profile.json"
+    example_profile = tmp_path / "example" / "profile.example.json"
+    example_profile.parent.mkdir(parents=True)
+    example_profile.write_text('{"career_preferences": {"geo_eligibility": {}}}', encoding="utf-8")
+    monkeypatch.setattr(candidate_service, "LOCAL_CANDIDATE_PROFILE_PATH", local_profile)
+    monkeypatch.setattr(candidate_service, "EXAMPLE_CANDIDATE_PROFILE_PATH", example_profile)
+
+    assert load_candidate_profile() == {"career_preferences": {"geo_eligibility": {}}}
+
+
+def test_load_candidate_profile_prefers_local_profile_over_example(tmp_path, monkeypatch):
+    from app.services import candidate_service
+
+    local_profile = tmp_path / "local" / "profile.json"
+    example_profile = tmp_path / "example" / "profile.example.json"
+    local_profile.parent.mkdir(parents=True)
+    example_profile.parent.mkdir(parents=True)
+    local_profile.write_text('{"owner": "local"}', encoding="utf-8")
+    example_profile.write_text('{"owner": "example"}', encoding="utf-8")
+    monkeypatch.setattr(candidate_service, "LOCAL_CANDIDATE_PROFILE_PATH", local_profile)
+    monkeypatch.setattr(candidate_service, "EXAMPLE_CANDIDATE_PROFILE_PATH", example_profile)
+
+    assert load_candidate_profile() == {"owner": "local"}
+
+
 def test_load_candidate_profile_missing_file_raises():
     missing_path = FIXTURES_DIR / "does_not_exist.json"
 

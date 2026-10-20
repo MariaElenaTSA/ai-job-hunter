@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from app.config import DEFAULT_MAX_AGE_DAYS
 from app.profile import MIN_SCORE
-from app.services import manual_import_service
+from app.services import batch_import_service, manual_import_service
 from app.services.job_service import (
     AllProvidersFailedError,
     UnknownSourceError,
@@ -58,6 +58,24 @@ def import_job(payload: manual_import_service.ManualJobImport):
     job = manual_import_service.build_normalized_job(payload)
     profile = get_scoring_profile(load_candidate_profile())
     return format_job(job, profile)
+
+@app.post("/jobs/import/batch")
+async def import_jobs_batch(file: UploadFile = File(...)):
+    # No summarize_job here: batch import is scoring-only by design, so
+    # importing 50 rows never triggers 50 paid OpenAI calls. The user
+    # requests summaries individually afterwards via GET /jobs/{id}/summary.
+    raw_bytes = await file.read()
+    profile = get_scoring_profile(load_candidate_profile())
+
+    try:
+        return batch_import_service.import_batch(file.filename, raw_bytes, profile)
+    except batch_import_service.BatchFileError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.message)
+    except batch_import_service.BatchRowErrors as error:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": "One or more rows are invalid", "errors": error.errors},
+        )
 
 @app.get("/jobs/{job_id}")
 def read_job(job_id: str):

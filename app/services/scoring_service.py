@@ -1,5 +1,6 @@
 import html
 import re
+import unicodedata
 
 import pycountry
 
@@ -8,18 +9,29 @@ from app.config import (
     CONTENT_KEYWORD_SYNONYMS,
     GEO_AMBIGUOUS_SCOPE_WORDS,
     GEO_ELIGIBLE_DESCRIPTION_PHRASES,
+    GEO_SCOPE_EQUIVALENCE_GROUPS,
     GEO_US_ONLY_PHRASES,
     MAX_CONTENT_SCORE,
     ONSITE_DESCRIPTION_PHRASES,
     ONSITE_LOCATION_KEYWORDS,
     REMOTE_DESCRIPTION_PHRASES,
     REMOTE_LOCATION_KEYWORDS,
+    REMOTE_TITLE_PHRASES,
     TITLE_KEYWORD_SYNONYMS,
     TITLE_MATCH_SCORE,
 )
 from app.services.candidate_service import get_scoring_profile, load_candidate_profile
 
 _TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
+
+
+def _strip_accents(text: str) -> str:
+    """Fold accented characters to their unaccented equivalent (e.g. "é" ->
+    "e"), so "Latinoamérica"/"América Latina" compare equal to their
+    unaccented spellings. Used only inside calculate_remote_eligibility and
+    calculate_geo_eligibility, on local copies -- never inside _tokenize or
+    _normalize_description, so it has no effect on calculate_score."""
+    return "".join(char for char in unicodedata.normalize("NFKD", text) if not unicodedata.combining(char))
 
 
 def _normalize_description(raw: str) -> str:
@@ -176,13 +188,22 @@ def calculate_score(job: dict, profile: dict = None) -> int:
 
 
 def calculate_remote_eligibility(job: dict, profile: dict = None) -> str:
-    location = job["location"]["name"].lower()
-    description = _normalize_description(job.get("content", ""))
+    # Eligibility-only local copies: accent-stripped so Spanish signals like
+    # "remoto"/"100% remoto" match regardless of diacritics. _normalize_description
+    # itself is untouched (calculate_score still tokenizes its own, unstripped
+    # copy), so this has no effect on scoring.
+    location = _strip_accents(job["location"]["name"].lower())
+    description = _strip_accents(_normalize_description(job.get("content", "")))
+    title = _strip_accents(job["title"].lower())
+    title_tokens = _tokenize(title)
 
     remote_signal = (
         job.get("workplace_type") == "remote"
         or any(keyword in location for keyword in REMOTE_LOCATION_KEYWORDS)
         or any(phrase in description for phrase in REMOTE_DESCRIPTION_PHRASES)
+        # Word/phrase-boundary-safe: "remote" must be its own token(s), never
+        # a substring inside an unrelated word.
+        or any(_term_matches(phrase, title_tokens) for phrase in REMOTE_TITLE_PHRASES)
     )
     onsite_signal = any(keyword in location for keyword in ONSITE_LOCATION_KEYWORDS) or any(
         phrase in description for phrase in ONSITE_DESCRIPTION_PHRASES
@@ -261,16 +282,31 @@ def _resolve_country_code(name: str) -> str:
     return _COUNTRY_TERMS.get(tuple(_tokenize(name.lower())))
 
 
+def _expand_scope_equivalents(scopes: set) -> set:
+    """Widen a set of lowercased acceptable scopes with their multilingual
+    equivalents (e.g. "latin america" also pulls in "latinoamerica" and
+    "america latina"), per GEO_SCOPE_EQUIVALENCE_GROUPS. Symmetric: it
+    doesn't matter which member of a group the candidate's profile names."""
+    expanded = set(scopes)
+    for group in GEO_SCOPE_EQUIVALENCE_GROUPS:
+        if expanded & group:
+            expanded |= group
+    return expanded
+
+
 def calculate_geo_eligibility(job: dict, profile: dict = None) -> str:
     if profile is None:
         profile = get_scoring_profile(load_candidate_profile())
 
-    location = job["location"]["name"].lower()
+    # Eligibility-only local copy: accent-stripped so "Latinoamérica"/"América
+    # Latina" tokenize the same as their unaccented spellings. _tokenize
+    # itself stays untouched -- calculate_score's own tokenization is unaffected.
+    location = _strip_accents(job["location"]["name"].lower())
     description = _normalize_description(job.get("content", ""))
     location_tokens = _tokenize(location)
 
     geo_profile = profile.get("geo_eligibility", {})
-    acceptable_scopes = [scope.lower() for scope in geo_profile.get("acceptable_scopes", [])]
+    acceptable_scopes = _expand_scope_equivalents({scope.lower() for scope in geo_profile.get("acceptable_scopes", [])})
     based_in_country = _resolve_country_code(geo_profile.get("based_in"))
 
     location_has_acceptable_scope = any(

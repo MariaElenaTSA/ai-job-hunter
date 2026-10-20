@@ -1,3 +1,5 @@
+import pytest
+
 from app.services.scoring_service import (
     _score_breakdown,
     calculate_geo_eligibility,
@@ -458,3 +460,102 @@ def test_remote_eligibility_eligible_when_description_says_work_from_anywhere():
     job = make_job(location="Remote", content="Work from anywhere and enjoy true flexibility.")
 
     assert calculate_remote_eligibility(job) == "eligible"
+
+
+# --- Multilingual geo scope equivalence: LATAM in Spanish ---
+
+@pytest.mark.parametrize("location", ["Latinoamérica", "Latinoamerica", "América Latina"])
+def test_geo_eligibility_treats_spanish_latam_variants_as_equivalent_to_latin_america(location):
+    job = make_job(location=location)
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "eligible"
+
+
+def test_geo_eligibility_latin_america_alone_is_eligible_but_not_a_remote_signal():
+    # "Latin America" (or any of its multilingual equivalents) only confirms
+    # geographic scope -- it must never, by itself, imply remote modality.
+    job = make_job(location="Latin America")
+
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == "eligible"
+    assert calculate_remote_eligibility(job) == "ambiguous"
+
+
+# --- Title-based remote signal ---
+
+@pytest.mark.parametrize("title", [
+    "Support Engineer Remote",
+    "Support Engineer - Fully Remote",
+    "Support Engineer (Remote)",
+])
+def test_remote_eligibility_eligible_when_title_states_remote_explicitly(title):
+    job = make_job(title=title, location="Peru", content="Some job description with no modality signal.")
+
+    assert calculate_remote_eligibility(job) == "eligible"
+
+
+def test_remote_eligibility_title_signal_does_not_match_inside_an_unrelated_word():
+    # "remote" must be its own token, never a substring match inside another word.
+    job = make_job(title="Remotely Supervised Field Technician", location="Peru", content="No modality signal.")
+
+    assert calculate_remote_eligibility(job) == "ambiguous"
+
+
+def test_remote_eligibility_ambiguous_when_title_says_remote_but_description_requires_office_presence():
+    job = make_job(
+        title="Support Engineer (Remote)",
+        location="Peru",
+        content="Employees are required to work from our office five days a week.",
+    )
+
+    assert calculate_remote_eligibility(job) == "ambiguous"
+
+
+# --- Regression: this eligibility fix must not change calculate_score ---
+# Values captured from the actual scoring_service before and after the fix
+# (accent-stripped local copies in calculate_remote_eligibility/
+# calculate_geo_eligibility, plus title-based remote matching) for job
+# shapes matching real LinkedIn imports that were originally reported
+# ambiguous: only remote_eligibility/geo_eligibility should move, the score
+# must stay byte-for-byte identical because _score_breakdown/calculate_score
+# were never touched.
+
+@pytest.mark.parametrize("title,location,content,expected_score,expected_remote,expected_geo", [
+    (
+        "Solutions Engineer (LATAM)",
+        "Latinoamerica (remote)",
+        "SQL troubleshooting and root cause analysis for enterprise customers.",
+        36, "eligible", "eligible",
+    ),
+    (
+        "Solutions Engineer",
+        "América Latina",
+        "SQL troubleshooting and root cause analysis for enterprise customers.",
+        36, "ambiguous", "eligible",
+    ),
+    (
+        "Solutions Engineer (Remote)",
+        "Peru",
+        "SQL troubleshooting and root cause analysis for enterprise customers.",
+        36, "eligible", "eligible",
+    ),
+    (
+        "Solutions Engineer - Fully Remote",
+        "Lima, Peru",
+        "SQL troubleshooting and root cause analysis for enterprise customers.",
+        36, "eligible", "eligible",
+    ),
+    (
+        "Marketing Intern",
+        "Remote - US Only",
+        "General marketing tasks and social media scheduling.",
+        0, "eligible", "not_eligible",
+    ),
+])
+def test_multilingual_eligibility_fix_does_not_change_score(
+    title, location, content, expected_score, expected_remote, expected_geo
+):
+    job = make_job(title=title, location=location, content=content)
+
+    assert calculate_score(job, profile=FULL_PROFILE) == expected_score
+    assert calculate_remote_eligibility(job, profile=FULL_PROFILE) == expected_remote
+    assert calculate_geo_eligibility(job, profile=FULL_PROFILE) == expected_geo

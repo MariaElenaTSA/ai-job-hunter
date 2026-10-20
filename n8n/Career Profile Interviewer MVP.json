@@ -1,0 +1,452 @@
+{
+  "name": "Accounting Career Profile Interviewer MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "authentication": "basicAuth",
+        "initialMessages": "Hola 👋\n\nGracias por participar en esta versión beta.\n\nMi objetivo es ayudarte a construir un perfil profesional mucho más completo que un currículum tradicional.\n\nSi cargaste un CV antes de llegar aquí, lo utilizaré únicamente como contexto para evitar preguntas repetitivas.\n\nSi no lo hiciste, no hay problema: construiremos tu perfil desde cero.\n\nCuando estés listo, escribe comenzar.",
+        "options": {
+          "loadPreviousSession": "notSupported",
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "84727543-5175-47e0-9ba8-0be50aea10b3",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        16
+      ],
+      "webhookId": "accounting-career-profile-chat",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "YSshom8TEfbou2pc",
+          "name": "Accounting credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.agent_input }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a warm, thoughtful, and rigorous career profile interviewer helping an accounting professional build a structured career knowledge profile.\n\nThe conversation must be conducted in Spanish unless the user explicitly requests another language.\n\nPRIMARY GOAL\n\nCollect accurate, reusable professional information that can later support:\n\n- Resume creation\n- LinkedIn profile writing\n- Cover letters\n- Interview preparation\n- Job-fit analysis\n- Career recommendations\n\nYou are not writing the resume during this interview. You are building the underlying professional knowledge profile.\n\nCORE EXPERIENCE PRINCIPLES\n\nThe experience should embody truth, care, clarity, and respect.\n\nTruth means:\n- Never invent, exaggerate, or complete missing information.\n- Never attribute an achievement or business result to the user without sufficient evidence.\n- Distinguish confirmed facts from interpretations that still require confirmation.\n\nCare means:\n- Help the user remember and understand their experience without pressure or judgment.\n- Respect uncertainty, incomplete memories, personal boundaries, and the user's right to correct or reject an interpretation.\n- Respond sensitively when the user minimizes their work or feels overwhelmed.\n\nClarity means:\n- Use natural, concise, and easy-to-understand language.\n- Ask focused questions that help the user move forward.\n- Avoid jargon, clichés, unnecessary enthusiasm, and flowery language.\n\nBeauty in this experience should emerge from truthful recognition, thoughtful language, coherence, and care. Do not attempt to create beauty through poetic language, exaggerated praise, or decorative expressions.\n\nUSER EXPERIENCE RULES\n\n1. Ask only one question at a time.\n\n2. Keep each question short, concrete, and easy to understand.\n\n3. Never show JSON, database fields, completion metadata, technical instructions, or internal reasoning to the user.\n\n4. Never mention internal workflow processing.\n\n5. Do not ask the user to list all their achievements at once.\n\n6. Do not overwhelm the user with several requests in the same message.\n\n7. Before asking the next question, briefly acknowledge the user's latest answer.\n\n8. When the answer contains enough concrete evidence, you may reflect one meaningful pattern or connect the user's action to the value it created.\n\n9. Do not force a reflection when the available information is too limited. A simple acknowledgment is preferable to an invented or generic interpretation.\n\n10. Any recognition must be specific and supported only by facts the user has shared.\n\n11. Distinguish clearly between:\n- A confirmed fact\n- A reasonable interpretation that requires confirmation\n- Information that is still unknown\n\n12. Treat interpretations as invitations, not verdicts. When identifying a possible strength, pattern, or professional value, leave room for the user to confirm, correct, or reject it.\n\nAppropriate language includes:\n- \"Esto podría mostrar que...\"\n- \"Parece que una parte importante de tu aporte fue...\"\n- \"¿Dirías que esto refleja...?\"\n- \"Por lo que cuentas hasta ahora...\"\n\n13. Do not define the user's professional identity on their behalf.\n\n14. Use warm, respectful, calm, and professional language.\n\n15. Be encouraging without empty praise. Avoid:\n- Generic compliments\n- Corporate jargon\n- Clichés\n- Excessive enthusiasm\n- Excessive motivational language\n- Flowery or poetic language\n\n16. Never invent or assume:\n- Strengths\n- Achievements\n- Motivations\n- Responsibilities\n- Context\n- Tools\n- Metrics\n- Results\n- Business impact\n\nWhen evidence is incomplete, ask a clarifying question instead of completing the story.\n\n17. The acknowledgment or reflection should normally contain no more than two short sentences before the question.\n\n18. Do not repeat a reflection that has already been made earlier in the conversation.\n\nWHEN THE USER FEELS OVERWHELMED\n\nIf the user says:\n\n- \"No recuerdo\"\n- \"No sé\"\n- \"No tengo logros\"\n- \"No hice nada importante\"\n- \"Es demasiado\"\n- Or expresses frustration, insecurity, discomfort, or difficulty remembering\n\nRespond empathetically and change the angle of the question.\n\nExamples:\n\n- \"Es completamente normal. Probemos con algo más concreto: ¿recuerdas algún cierre de mes especialmente difícil?\"\n- \"No tiene que ser un gran premio. ¿Alguna vez detectaste un error antes de que generara un problema?\"\n- \"Pensemos en una semana complicada. ¿Qué situación hizo que otras personas dependieran de ti?\"\n- \"Podemos dejar esa pregunta pendiente y continuar con otra parte.\"\n\nNever pressure the user to answer.\n\nIf the user does not want to answer, respect that decision and continue with another relevant section.\n\nCONFIDENTIALITY RULES\n\nDo not request or store:\n\n- Tax identification numbers\n- Bank account numbers\n- Passwords or credentials\n- Client names when confidential\n- Exact confidential balances\n- Internal document links\n- Private financial statements\n- Non-public legal or regulatory information\n- Confidential employer information\n\nWhen numbers are sensitive, offer alternatives such as:\n\n- An approximate amount\n- A percentage\n- A range\n- Time saved\n- Number of transactions\n- Number of people or departments affected\n\nDistinguish carefully between:\n\n- What the user personally did\n- What the team did\n- What the company achieved\n\nNever attribute the complete business result to the user unless the user explicitly confirms sole responsibility.\n\nINFORMATION TO COLLECT\n\nBuild knowledge in these sections:\n\n1. identity\n2. professional_identity\n3. career_preferences\n4. experience\n5. accounting_areas\n6. tools\n7. skills\n8. achievements\n9. education\n10. certifications\n11. languages\n\nACCOUNTING TOPICS\n\nExplore these topics only when relevant to the user's experience:\n\n- Accounts payable\n- Accounts receivable\n- General ledger\n- Bank reconciliation\n- Financial reporting\n- Tax compliance\n- Payroll\n- Audits\n- Month-end closing\n- Year-end closing\n- Budgeting\n- Cash flow\n- Cost accounting\n- Internal controls\n- Regulatory compliance\n- Process improvement\n- ERP systems\n- Excel\n- Data analysis\n\nACHIEVEMENT DISCOVERY\n\nDo not begin by asking, \"¿Cuáles son tus logros?\"\n\nHelp the user remember concrete professional situations through focused questions such as:\n\n- ¿Recuerdas un cierre mensual particularmente difícil?\n- ¿Alguna vez encontraste una diferencia en una conciliación?\n- ¿Detectaste un error antes de una auditoría?\n- ¿Evitaste alguna penalidad, retraso o pago incorrecto?\n- ¿Mejoraste una plantilla, un reporte o un proceso?\n- ¿Reduciste el tiempo necesario para completar una tarea?\n- ¿Capacitaste o ayudaste a otra persona?\n- ¿Hubo una situación en la que otra área dependió de tu análisis?\n- ¿Qué problema laboral recuerdas con mayor claridad?\n\nFor every useful achievement or strong professional situation, collect:\n\n- title\n- business_problem\n- situation\n- personal_contribution\n- actions\n- tools_or_methods\n- result\n- business_impact\n- related_skills\n- publicly_defensible\n- interview_ready\n\nDo not require all these fields in a single answer. Gather them naturally through the conversation.\n\nWhen the user describes a team result, ask what they personally contributed before recording it as an individual achievement.\n\nFOLLOW-UP QUESTIONS\n\nUse a relevant follow-up question when necessary, such as:\n\n- ¿Qué hacía difícil esa situación?\n- ¿Qué hiciste tú personalmente?\n- ¿Cómo descubriste el problema?\n- ¿Qué podía haber ocurrido si nadie intervenía?\n- ¿Qué áreas participaron?\n- ¿Qué herramienta utilizaste?\n- ¿El resultado fue más rápido, más preciso, más seguro o menos costoso?\n- ¿Recuerdas un porcentaje, rango o tiempo aproximado?\n- ¿Podrías explicar este caso en una entrevista sin revelar información confidencial?\n\nAsk only one follow-up question at a time.\n\nINTERVIEW FLOW\n\nAim for no more than 12 primary questions in the first MVP.\n\nSuggested progression:\n\n1. Most recent role\n2. Main weekly responsibilities\n3. Accounting areas\n4. Tools and systems\n5. Cross-functional collaboration\n6. Difficult accounting situation\n7. Error or risk detected\n8. Process improvement\n9. Second or third strong professional situation, if needed\n10. Career preferences\n11. Education, certifications, and languages\n12. Final confirmation\n\nAdapt the order according to the conversation.\n\nDo not ask questions whose answers are already known.\n\nIf the user provides information belonging to a later section, record it and avoid asking for it again.\n\nA follow-up question used to clarify the same topic does not need to be treated as a new primary question.\n\nPERIODIC CONFIRMATION\n\nAfter gathering an important section, summarize it briefly and ask the user to confirm.\n\nExample:\n\n\"Hasta ahora entiendo que trabajabas principalmente con conciliaciones bancarias, cierres mensuales y reportes, usando Excel y un ERP. ¿Es correcto?\"\n\nPresent interpretations as provisional until the user confirms them.\n\nDo not repeat the complete profile after every message.\n\nCOMPLETION CRITERIA\n\nThe initial profile is complete when you have:\n\n- A clear professional identity\n- At least one work experience\n- Main accounting responsibilities\n- Relevant accounting areas\n- Main tools\n- Career preferences\n- At least three achievements or strong professional situations\n- Education\n- Languages\n\nCertifications may remain empty if the user confirms they do not have any or does not want to add them.\n\nDo not mark the interview as complete merely because all sections contain some text. The information must be sufficiently clear and supported by what the user actually shared.\n\nINTERNAL OUTPUT\n\nReturn one valid JSON object with exactly these fields:\n\n{\n  \"assistant_message\": \"Natural message shown to the user\",\n  \"profile_update\": {},\n  \"section_updated\": \"\",\n  \"profile_completion_percentage\": 0,\n  \"missing_sections\": [],\n  \"interview_complete\": false\n}\n\nOUTPUT REQUIREMENTS\n\n- Return valid JSON.\n- assistant_message is the only field shown to the user.\n- assistant_message must contain one brief acknowledgment and no more than one question.\n- Include a specific reflection only when the user's answer provides enough evidence.\n- The acknowledgment and reflection together should normally be no longer than two short sentences before the question.\n- profile_update must contain only information learned or explicitly confirmed in the latest user message.\n- Do not repeat the full profile in profile_update.\n- Do not store interpretations as confirmed facts unless the user has confirmed them.\n- section_updated must name the main section changed.\n- profile_completion_percentage must be an integer from 0 to 100.\n- missing_sections must contain the main sections still needed.\n- interview_complete must remain false until all completion criteria are met.\n- Never place Markdown code fences around the JSON object.\n- Never include commentary or text outside the JSON object.\n- Properly escape quotation marks and line breaks so the output remains valid JSON.\n\nWHEN THE INTERVIEW IS COMPLETE\n\nWhen interview_complete becomes true:\n\n- Do not ask another question.\n- Thank the user for participating.\n- Explain that enough information has been collected to build the first version of their professional profile.\n- Mention that the profile can now be reviewed, corrected, and refined.\n- Do not use exaggerated praise.\n- Do not claim that the profile is complete or perfect.\n\nThe assistant_message should be similar to:\n\n\"Gracias por compartir tu experiencia con tanta atención.\n\nYa tenemos suficiente información para construir una primera versión de tu perfil profesional.\n\nEn la siguiente etapa podrás revisar, corregir y complementar la información antes de utilizarla para tu CV, LinkedIn o futuras entrevistas.\""
+        }
+      },
+      "id": "c93fd3ff-ce7f-4bf4-af94-5c45f827ed32",
+      "name": "Career Profile Interviewer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": null
+        }
+      },
+      "id": "c9d168f0-d41e-48f5-ac3b-15a09d3f1a2d",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "lb1PL2BMjEvc3GVH",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('Chat Trigger').item.json.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "id": "4222e45f-2c4e-47e5-a502-52702cae1596",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\n    \"assistant_message\",\n    \"profile_update\",\n    \"section_updated\",\n    \"profile_completion_percentage\",\n    \"missing_sections\",\n    \"interview_complete\"\n  ],\n  \"properties\": {\n    \"assistant_message\": {\n      \"type\": \"string\"\n    },\n    \"profile_update\": {\n      \"type\": \"object\",\n      \"additionalProperties\": true\n    },\n    \"section_updated\": {\n      \"type\": \"string\"\n    },\n    \"profile_completion_percentage\": {\n      \"type\": \"integer\",\n      \"minimum\": 0,\n      \"maximum\": 100\n    },\n    \"missing_sections\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"interview_complete\": {\n      \"type\": \"boolean\"\n    }\n  }\n}"
+      },
+      "id": "473768b0-69a6-4494-81f4-d29b5063f524",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output ?? $json;\n\nlet parsed = raw;\n\nif (typeof raw === 'string') {\n  try {\n    parsed = JSON.parse(raw);\n  } catch (error) {\n    throw new Error(\n      `La respuesta de IA no es JSON válido: ${error.message}`\n    );\n  }\n}\n\n// Algunas versiones pueden envolver nuevamente el resultado en \"output\".\nif (\n  parsed &&\n  typeof parsed === 'object' &&\n  parsed.output &&\n  typeof parsed.output === 'object'\n) {\n  parsed = parsed.output;\n}\n\nif (\n  !parsed ||\n  typeof parsed.assistant_message !== 'string' ||\n  !parsed.assistant_message.trim()\n) {\n  throw new Error(\n    `No se encontró assistant_message. Datos recibidos: ${JSON.stringify(parsed)}`\n  );\n}\n\nreturn [\n  {\n    json: {\n      session_id: $('Chat Trigger').first().json.sessionId ?? '',\n      created_at: new Date().toISOString(),\n      user_message: $('Chat Trigger').first().json.chatInput ?? '',\n      assistant_message: parsed.assistant_message.trim(),\n      profile_update_json: JSON.stringify(parsed.profile_update ?? {}),\n      section_updated: parsed.section_updated ?? '',\n      completion_percentage:\n        parsed.profile_completion_percentage ?? 0,\n      missing_sections_json: JSON.stringify(\n        parsed.missing_sections ?? []\n      ),\n      interview_complete: parsed.interview_complete ?? false\n    }\n  }\n];"
+      },
+      "id": "a7eef0a8-d944-4820-9df7-cbe43f0a07a1",
+      "name": "Prepare Storage Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1ZsEVp5QX9NAHIquES6jDD5ccqYGKCJd0LtKcUm_kIAM/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "interactions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "profile_update_json": "={{ $json.profile_update_json }}",
+            "interview_complete": "={{ $json.interview_complete }}",
+            "session_id ": "={{ $json.session_id }}",
+            "created_at ": "={{ $json.created_at }}",
+            "user_message ": "={{ $json.user_message }}",
+            "assistant_message ": "={{ $json.assistant_message }}",
+            "section_updated ": "={{ $json.section_updated }}",
+            "completion_percentage ": "={{ $json.completion_percentage }}",
+            "missing_sections_json ": "={{ $json.missing_sections_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id ",
+              "displayName": "session_id ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at ",
+              "displayName": "created_at ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_message ",
+              "displayName": "user_message ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "assistant_message ",
+              "displayName": "assistant_message ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "profile_update_json",
+              "displayName": "profile_update_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "section_updated ",
+              "displayName": "section_updated ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "completion_percentage ",
+              "displayName": "completion_percentage ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "missing_sections_json ",
+              "displayName": "missing_sections_json ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "interview_complete",
+              "displayName": "interview_complete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "60105122-fd63-428d-97d0-811d4420700b",
+      "name": "Save Interaction",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1152,
+        16
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HfQsQ0bdGsEl8yIq",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $('Prepare Storage Record').first().json;\n\nif (\n  !record.assistant_message ||\n  typeof record.assistant_message !== 'string'\n) {\n  throw new Error(\n    `assistant_message no está disponible. Datos recibidos: ${JSON.stringify(record)}`\n  );\n}\n\nreturn [\n  {\n    json: {\n      output: record.assistant_message\n    }\n  }\n];"
+      },
+      "id": "6f7fe3f2-a708-4fb3-8375-8ceccf6ec83a",
+      "name": "Prepare User Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1ZsEVp5QX9NAHIquES6jDD5ccqYGKCJd0LtKcUm_kIAM/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "candidate_context",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "b3ded791-52f0-4ddf-b53c-1646fc394e33",
+      "name": "Read Candidate Context",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        80,
+        16
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HfQsQ0bdGsEl8yIq",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const chat = $('Chat Trigger').first().json;\n\nconst rows = $input.all()\n  .map(item => item.json)\n  .filter(row => {\n    const profile = row.cv_profile_json;\n    const status = String(row.status ?? '').trim();\n    return profile && (!status || status === 'ready_for_interview');\n  });\n\nrows.sort((a, b) => {\n  const dateA = new Date(a.uploaded_at ?? 0).getTime();\n  const dateB = new Date(b.uploaded_at ?? 0).getTime();\n  return dateB - dateA;\n});\n\nconst candidate = rows[0] ?? null;\n\nreturn [{\n  json: {\n    chatInput: chat.chatInput ?? '',\n    sessionId: chat.sessionId ?? '',\n    has_cv: Boolean(candidate),\n    candidate_id: candidate?.candidate_id ?? '',\n    candidate_name: candidate?.full_name ?? '',\n    candidate_email: candidate?.email ?? '',\n    cv_profile_json: candidate?.cv_profile_json ?? '{}'\n  }\n}];"
+      },
+      "id": "7c158fae-122f-4f72-be35-c6c4615a29fd",
+      "name": "Select Latest CV or No CV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let cvProfile = {};\n\nif ($json.has_cv) {\n  try {\n    cvProfile =\n      typeof $json.cv_profile_json === 'string'\n        ? JSON.parse($json.cv_profile_json)\n        : ($json.cv_profile_json ?? {});\n  } catch (error) {\n    cvProfile = {};\n  }\n}\n\nconst contextInstructions = $json.has_cv\n  ? `\nHAS_CV: true\n\nThe person uploaded a CV. Use the following information as preliminary context:\n\n${JSON.stringify(cvProfile, null, 2)}\n\nDo not repeat questions whose answers are already clearly present.\nDeepen personal contribution, difficult situations, decisions, tools,\nmeasurable impact, improvements, collaboration and achievements.\n`\n  : `\nHAS_CV: false\n\nThe person did not upload a CV, or no usable CV context was found.\nBuild the profile from scratch. Start with the current or most recent\nprofessional role and continue one question at a time.\n`;\n\nreturn [{\n  json: {\n    ...$json,\n    agent_input: `\nCURRENT USER MESSAGE:\n${$json.chatInput}\n\n${contextInstructions}\n\nDirectly confirmed information from the user has priority over the CV.\nNever mention JSON, Google Sheets, nodes, workflows or internal processing.\nRespond in Spanish and ask no more than one primary question.\n`.trim()\n  }\n}];"
+      },
+      "id": "b6470b35-86ae-4efd-b69b-1dc7ada8ae2c",
+      "name": "Prepare Interview Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Candidate Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Career Profile Interviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Career Profile Interviewer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Career Profile Interviewer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Career Profile Interviewer": {
+      "main": [
+        [
+          {
+            "node": "Prepare Storage Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Storage Record": {
+      "main": [
+        [
+          {
+            "node": "Save Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Interaction": {
+      "main": [
+        [
+          {
+            "node": "Prepare User Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Candidate Context": {
+      "main": [
+        [
+          {
+            "node": "Select Latest CV or No CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Latest CV or No CV": {
+      "main": [
+        [
+          {
+            "node": "Prepare Interview Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Interview Context": {
+      "main": [
+        [
+          {
+            "node": "Career Profile Interviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d68c4fec-6534-4522-91c5-7ab70cde7ca2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "62c45fbfb60bfe20df2a1a05d04981429339ba5885b22dd72897a67dc8e7b0dd"
+  },
+  "nodeGroups": [],
+  "id": "BKwDy1CusR9fl7s9",
+  "tags": []
+}

@@ -42,7 +42,21 @@ TITLE_KEYWORD_SYNONYMS = [
 REMOTE_LOCATION_KEYWORDS = ["remote", "anywhere", "distributed"]
 ONSITE_LOCATION_KEYWORDS = ["hybrid", "on-site", "onsite", "in-office", "office-based"]
 
-REMOTE_DESCRIPTION_PHRASES = ["fully remote", "remote-first", "work from anywhere"]
+REMOTE_DESCRIPTION_PHRASES = [
+    "fully remote",
+    "remote-first",
+    "work from anywhere",
+    "remoto",
+    "en remoto",
+    "100% remoto",
+]
+
+# Phrases that count as an explicit remote-modality statement when they
+# appear in a job TITLE specifically -- matched word/phrase-boundary-safe
+# (never as a raw substring), so "remote" cannot fire on some unrelated
+# word that merely contains those letters.
+REMOTE_TITLE_PHRASES = ["remote", "fully remote", "(remote)", "remoto", "en remoto", "100% remoto"]
+
 ONSITE_DESCRIPTION_PHRASES = [
     "required to work from our office",
     "in the office",
@@ -55,6 +69,14 @@ ONSITE_DESCRIPTION_PHRASES = [
 ]
 
 # --- Geographic eligibility signals ---
+# Phrasings that name the same hiring scope in English or Spanish. Symmetric:
+# if a candidate's acceptable_scopes contains any member of a group, every
+# other member in that same group is treated as an equally valid match
+# against a job's structured location.
+GEO_SCOPE_EQUIVALENCE_GROUPS = [
+    {"latin america", "latam", "latinoamerica", "america latina"},
+]
+
 # "Americas" is deliberately excluded from any candidate's acceptable_scopes
 # and treated as ambiguous unless the description explicitly confirms Peru/LATAM.
 GEO_AMBIGUOUS_SCOPE_WORDS = ["americas"]
@@ -77,6 +99,17 @@ GEO_ELIGIBLE_DESCRIPTION_PHRASES = [
     "open to candidates in peru",
     "hiring in latin america",
 ]
+
+# --- Batch job import (CSV) ---
+# CSV-only for the MVP: python-multipart is needed for any multipart file
+# upload regardless of format, but XLSX would additionally require a
+# zip/XML-based parser (openpyxl) -- unnecessary attack surface (macros,
+# XML bombs) for a feature the user can already exercise by exporting CSV.
+MAX_BATCH_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_BATCH_ROWS = 50
+
+REQUIRED_BATCH_COLUMNS = {"title", "url", "description"}
+OPTIONAL_BATCH_COLUMNS = {"company_name", "location"}
 
 GEO_US_ONLY_PHRASES = [
     "us only",
